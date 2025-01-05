@@ -22,7 +22,7 @@ public class CountryCodeMap {
     private void initialiseCountryCodeMapping() {
         try {
             Reader reader = new InputStreamReader(
-                    getClass()
+                            getClass()
                             .getClassLoader()
                             .getResourceAsStream(COUNTRY_CODE_JSON_FILE)
             );

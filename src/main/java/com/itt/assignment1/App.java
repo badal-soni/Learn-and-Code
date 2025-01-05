@@ -15,7 +15,7 @@ public class App {
 
         try {
             Validator.validateCountryCode(countryCode);
-            System.out.println("Country Name: " + countryCodeMap.getCountryName(countryCode));
+            System.out.println("Adjacent Country's Name: " + countryCodeMap.getCountryName(countryCode));
         } catch (Exception exception) {
             System.err.print(exception.getMessage());
         }
