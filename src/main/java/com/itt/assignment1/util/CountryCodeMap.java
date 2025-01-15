@@ -6,13 +6,14 @@ import com.itt.assignment1.exception.CountryCodeNotFoundException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public class CountryCodeMap {
 
     private static final String COUNTRY_CODE_JSON_FILE = "country-code.json";
-    private final Map<String, String> countryCodeToCountryName;
+    private final Map<String, List<String>> countryCodeToCountryName;
 
     public CountryCodeMap() {
         countryCodeToCountryName = new HashMap<>();
@@ -28,7 +29,7 @@ public class CountryCodeMap {
             );
 
             Gson gson = new Gson();
-            Map<String, String> jsonMap = gson.fromJson(reader, Map.class);
+            Map<String, List<String>> jsonMap = gson.fromJson(reader, Map.class);
 
             countryCodeToCountryName.putAll(jsonMap);
 
@@ -38,7 +39,7 @@ public class CountryCodeMap {
         }
     }
 
-    public String getCountryName(String countryCode) throws CountryCodeNotFoundException {
+    public List<String> getCountryName(String countryCode) throws CountryCodeNotFoundException {
         return Optional
                 .ofNullable(countryCodeToCountryName.get(countryCode))
                 .orElseThrow(() -> new CountryCodeNotFoundException(countryCode + " not found"));
