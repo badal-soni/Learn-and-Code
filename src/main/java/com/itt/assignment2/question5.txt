@@ -1,0 +1,22 @@
+class Employee {
+    int id;
+    string name;
+    string department;
+    bool working;
+
+public:
+    void saveEmployeeToDatabase();
+    void printEmployeeDetailReportXML();
+    void printEmployeeDetailReportCSV();
+    void terminateEmployee();
+    bool isWorking();
+};
+
+The above class is not following the SRP because of the following reasons:
+
+1. It has methods such as saveEmployeeToDatabase() which takes care of the persistence logic. We should create one repository
+   class to handle CRUD operations.
+
+2. It also has methods such as printEmployeeDetailReportXML() and printEmployeeDetailReportCSV() which prints the employee details
+   in XML and CSV formats. These are unrelated to the Employee's behaviour. We should create one interface with one abstract method
+   export() and can create two classes which implements that interface for CSV and XML report formats.

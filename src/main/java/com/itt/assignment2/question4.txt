@@ -1,0 +1,39 @@
+class Book {
+
+    function getTitle() {
+        return "A Great Book";
+    }
+
+    function getAuthor() {
+        return "John Doe";
+    }
+
+    function turnPage() {
+        // pointer to next page
+    }
+
+    function getCurrentPage() {
+        return "current page content";
+    }
+
+    function getLocation() {
+        // returns the position in the library
+        // ie. shelf number & room number
+    }
+
+    function save() {
+        $filename = '/documents/'. $this->getTitle(). ' - ' . $this->getAuthor();
+        file_put_contents($filename, serialize($this));
+    }
+}
+
+The above Book class is not obeying the SRP principle because of the following reasons:
+
+1. It has getLocation() method which returns the physical location of the book in Library.
+   Instead of this we can create a new class LibraryManager to take care of that logic.
+
+2. It also has a save() method which is handling the persistence logic. Instead of this
+   we can create a new class BookRepository class to take care of the CRUD on the book.
+
+3. Also, if in future there is a requirement to change the save functionality then we have
+   to change the save method which violates the OCP.
