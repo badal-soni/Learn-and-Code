@@ -17,7 +17,7 @@ public class TumblrApiService {
         try {
             URL url = new URL(apiUrl);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod(HttpMethod.valueOf(HttpMethod.GET));
+            connection.setRequestMethod(HttpMethod.GET);
 
             BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             String inputLine;
@@ -26,15 +26,21 @@ public class TumblrApiService {
             }
             in.close();
 
-            String jsonString = response
-                    .toString()
-                    .replace(TUMBLR_API_RESPONSE_PREFIX, "")
-                    .trim();
-            return Optional.of(jsonString);
+            return Optional.of(getJsonStringFromResponse(response));
         } catch (Exception e) {
             System.err.print(e.getMessage());
         }
         return Optional.empty();
+    }
+
+    /**
+     * Replacing TUMBLR_API_RESPONSE_PREFIX with an empty string because we don't want the variable name in the response
+     */
+    private String getJsonStringFromResponse(StringBuilder response) {
+        return response
+                .toString()
+                .replace(TUMBLR_API_RESPONSE_PREFIX, "")
+                .trim();
     }
 
 }

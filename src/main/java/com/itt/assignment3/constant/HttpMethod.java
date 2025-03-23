@@ -1,14 +1,10 @@
 package com.itt.assignment3.constant;
 
-public enum HttpMethod {
+public class HttpMethod {
 
-    GET,
-    POST,
-    PUT,
-    DELETE;
-
-    public static String valueOf(HttpMethod method) {
-        return method.name();
-    }
+    public static final String GET = "GET";
+    public static final String POST = "POST";
+    public static final String PUT = "PUT";
+    public static final String DELETE = "DELETE";
 
 }
