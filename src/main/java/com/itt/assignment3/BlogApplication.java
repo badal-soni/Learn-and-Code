@@ -33,10 +33,10 @@ public class BlogApplication {
     }
 
     private static String buildApiURL(Scanner scanner) {
-        System.out.print("Enter the Tumblr blog name: ");
+        System.out.print(Constants.INPUT_PROMPT_TEXT);
         String blogName = scanner.next();
 
-        System.out.print("Enter the range: ");
+        System.out.print(Constants.RANGE_INPUT_PROMPT_TEXT);
         String[] rangeArray = scanner.next().split("-");
 
         Validator.validateRange(rangeArray);
