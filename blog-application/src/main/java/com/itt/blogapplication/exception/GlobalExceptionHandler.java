@@ -1,7 +1,6 @@
-package com.itt.blogapplication.controller;
+package com.itt.blogapplication.exception;
 
 import com.itt.blogapplication.dto.response.ApiErrorResponse;
-import com.itt.blogapplication.exception.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
