@@ -73,8 +73,6 @@ public class OrderService {
         }
     }
 
-
-
     public OrderResponse cancelOrder(String orderId) {
         Optional<Order> orderOptional = orderRepository.findOrderById(orderId);
 
