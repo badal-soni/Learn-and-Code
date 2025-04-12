@@ -1,5 +1,7 @@
 package com.itt.livecoding.service;
 
+import com.itt.livecoding.entities.Order;
+import com.itt.livecoding.entities.OrderItem;
 import com.itt.livecoding.entities.Stock;
 import com.itt.livecoding.repository.StockRepository;
 
@@ -23,6 +25,12 @@ public class StockService {
 
     public void updateStock(String productId, int quantity) {
         stockRepository.updateStock(productId, quantity);
+    }
+
+    public void updateStockForOrder(Order order, int multiplier) {
+        for (OrderItem item : order.items) {
+            updateStock(item.productId, multiplier * item.quantity);
+        }
     }
 
 }

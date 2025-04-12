@@ -25,6 +25,8 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final StockService stockService;
     private final CustomerService customerService;
+    private final NotificationHandler notificationHandler;
+    private final PricingService pricingService;
 
     private static final int POSITIVE_MULTIPLIER = 1;
     private static final int NEGATIVE_MULTIPLIER = -1;
@@ -32,28 +34,32 @@ public class OrderService {
     public OrderService(
             OrderRepository orderRepository,
             StockService stockService,
-            CustomerService customerService
+            CustomerService customerService,
+            NotificationHandler notificationHandler,
+            PricingService pricingService
     ) {
         this.orderRepository = orderRepository;
         this.stockService = stockService;
         this.customerService = customerService;
+        this.notificationHandler = notificationHandler;
+        this.pricingService = pricingService;
     }
 
     public OrderResponse placeOrder(OrderRequest orderRequest) {
         validateStock(orderRequest.items);
 
-        double discountedPrice = calculatePrice(orderRequest);
+        double discountedPrice = pricingService.calculateFinalPrice(orderRequest);
         MemberShipLevel memberShipLevel = customerService.findCustomerMemberShipLevel(orderRequest.customerId);
 
         Order order = new Order();
         order.customerId = orderRequest.customerId;
-        order.discountApplied = Utility.getDiscountPercentageFromCustomerMembershipLevel(memberShipLevel);
-        order.totalAmount = getTotalAmount(orderRequest);
+        order.discountApplied = Utility.getDiscountRate(memberShipLevel);
+        order.totalAmount = pricingService.getTotalAmount(orderRequest);
         order.finalAmount = discountedPrice;
 
         order = orderRepository.saveOrder(order);
-        updateStock(order, NEGATIVE_MULTIPLIER);
-        sendNotification(order);
+        stockService.updateStockForOrder(order, NEGATIVE_MULTIPLIER);
+        notificationHandler.notifyOrderProcessing(order);
 
         return Mapper.mapToOrderResponse(order);
     }
@@ -67,40 +73,7 @@ public class OrderService {
         }
     }
 
-    private double calculatePrice(OrderRequest orderRequest) {
-        final CustomerResponse customerResponseDTO = customerService.findCustomerById(orderRequest.customerId);
-        final MemberShipLevel memberShipLevel = customerResponseDTO.membershipLevel;
-        double price = getTotalAmount(orderRequest);
 
-        final double discountPercent = Utility.getDiscountPercentageFromCustomerMembershipLevel(memberShipLevel);
-
-        return price * (100 - discountPercent) / 100;
-    }
-
-    private double getTotalAmount(OrderRequest orderRequest) {
-        double price = 0;
-        for (OrderItem orderItem : orderRequest.items) {
-            price += orderItem.price;
-        }
-        return price;
-    }
-
-    private void updateStock(Order orderRequest, int multiplier) {
-        for (OrderItem orderItem : orderRequest.items) {
-            stockService.updateStock(orderItem.productId, multiplier * orderItem.quantity);
-        }
-    }
-
-    private void sendNotification(Order order) {
-        CustomerResponse customer = customerService.findCustomerById(order.customerId);
-        NotificationMetadata notificationMetadata = new NotificationMetadata(
-                Role.CUSTOMER,
-                customer.email,
-                "Order " + order.id + " is being processed"
-        );
-        NotificationService notificationService = NotificationFactory.getInstance(notificationMetadata);
-        notificationService.sendNotification();
-    }
 
     public OrderResponse cancelOrder(String orderId) {
         Optional<Order> orderOptional = orderRepository.findOrderById(orderId);
@@ -113,8 +86,8 @@ public class OrderService {
         order.status = OrderStatus.CANCELLED;
         orderRepository.saveOrder(order);
 
-        updateStock(order, POSITIVE_MULTIPLIER);
-        sendNotification(order);
+        stockService.updateStockForOrder(order, POSITIVE_MULTIPLIER);
+        notificationHandler.notifyOrderProcessing(order);
 
         return Mapper.mapToOrderResponse(order);
     }

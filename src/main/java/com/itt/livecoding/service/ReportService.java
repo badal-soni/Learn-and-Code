@@ -3,6 +3,7 @@ package com.itt.livecoding.service;
 import com.itt.livecoding.constant.OrderStatus;
 import com.itt.livecoding.dto.response.CustomerResponse;
 import com.itt.livecoding.dto.response.OrderResponse;
+import com.itt.livecoding.util.Utility;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,7 +33,7 @@ public class ReportService {
         List<OrderResponse> orders = orderService.findAllOrders();
 
         for (OrderResponse order : orders) {
-            if (isDateInRange(order, startDate, endDate)) {
+            if (Utility.isDateInRange(order, startDate, endDate)) {
                 if (!order.orderStatus.equals(OrderStatus.CANCELLED)) {
                     totalOrders++;
                     totalRevenue += order.finalAmount;
@@ -55,9 +56,4 @@ public class ReportService {
                 .append("\nTotal Revenue: $").append(String.format("%.2f", totalRevenue));
         return report.toString();
     }
-
-    private boolean isDateInRange(OrderResponse order, LocalDateTime startDate, LocalDateTime endDate) {
-        return order.createdAt.isAfter(startDate) && order.createdAt.isBefore(endDate);
-    }
-
 }
