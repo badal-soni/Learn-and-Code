@@ -34,7 +34,7 @@ public class Wallet {
         value += deposit;
     }
 
-    public void subtractMoney(float debit) {
+    public void withDrawMoney(float debit) {
         value -= debit;
     }
 
@@ -67,7 +67,7 @@ public class Customer {
 
     private String firstName;
     private String lastName;
-    private Wallet myWallet;
+    private Wallet myWallet = new Wallet();
 
     public String getFirstName() {
         return firstName;
@@ -78,7 +78,6 @@ public class Customer {
     }
 
     public void payMoney(int payment) {
-        Wallet myWallet = new Wallet();
         if (myWallet.getTotalMoney() > payment) {
             myWallet.subtractMoney(payment);
         } else {
