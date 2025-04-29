@@ -1,5 +1,7 @@
 package com.itt.assignment6.util;
 
+import com.itt.assignment6.constant.ErrorMessage;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
@@ -14,11 +16,11 @@ public class PropertyReader {
         properties = new Properties();
         try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(PROPERTIES_FILE)) {
             if (Objects.isNull(inputStream)) {
-                throw new IOException("Properties file not found in resources folder: " + PROPERTIES_FILE);
+                throw new IOException(ErrorMessage.PROPERTY_NOT_FOUND + PROPERTIES_FILE);
             }
             properties.load(inputStream);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to load properties file: " + PROPERTIES_FILE, e);
+            throw new RuntimeException(ErrorMessage.PROPERTY_NOT_FOUND + PROPERTIES_FILE, e);
         }
     }
 

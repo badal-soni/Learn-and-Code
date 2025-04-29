@@ -24,7 +24,6 @@ public class GeoLocationApiClient {
 
     public List<Coordinates> getCoordinates(String place) {
         String apiUrl = "https://geocode.maps.co/search?q=" + createSearchQuery(place);
-        System.out.println("URL: " + apiUrl);
         StringBuilder response = new StringBuilder();
         try {
             URL url = new URL(apiUrl);
@@ -54,7 +53,8 @@ public class GeoLocationApiClient {
                 searchQuery.append('+');
             }
         }
-        searchQuery.append("&api_key=").append(getApiKey());
+        final String queryParam = "&api_key";
+        searchQuery.append(queryParam).append(getApiKey());
         return searchQuery.toString();
     }
 
