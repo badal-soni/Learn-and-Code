@@ -1,12 +1,14 @@
 package com.itt.assignment6.wrapper;
 
 import com.itt.assignment3.constant.HttpMethod;
+import com.itt.assignment6.constant.Constants;
 import com.itt.assignment6.constant.PropertyKeys;
 import com.itt.assignment6.dto.Coordinates;
 import com.itt.assignment6.util.Parser;
 import com.itt.assignment6.util.PropertyReader;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -23,12 +25,10 @@ public class GeoLocationApiClient {
     }
 
     public List<Coordinates> getCoordinates(String place) {
-        String apiUrl = "https://geocode.maps.co/search?q=" + createSearchQuery(place);
-        StringBuilder response = new StringBuilder();
         try {
-            URL url = new URL(apiUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod(HttpMethod.GET);
+            String apiUrl = Constants.GEOCODE_SEARCH_URL + createSearchQuery(place);
+            StringBuilder response = new StringBuilder();
+            HttpURLConnection connection = buildConnection(apiUrl);
 
             BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             String inputLine;
@@ -39,9 +39,16 @@ public class GeoLocationApiClient {
 
             return responseParser.parse(response.toString());
         } catch (Exception e) {
-            System.err.print("Error: " + e.getMessage());
+            System.err.print(Constants.ERROR + e.getMessage());
         }
         return null;
+    }
+
+    private HttpURLConnection buildConnection(String apiUrl) throws IOException {
+        URL url = new URL(apiUrl);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod(HttpMethod.GET);
+        return connection;
     }
 
     private String createSearchQuery(String place) {

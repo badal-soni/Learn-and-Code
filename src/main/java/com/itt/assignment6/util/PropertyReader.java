@@ -13,7 +13,11 @@ public class PropertyReader {
     private final Properties properties;
 
     public PropertyReader() {
-        properties = new Properties();
+        this.properties = new Properties();
+        this.init();
+    }
+
+    private void init() {
         try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(PROPERTIES_FILE)) {
             if (Objects.isNull(inputStream)) {
                 throw new IOException(ErrorMessage.PROPERTY_NOT_FOUND + PROPERTIES_FILE);
