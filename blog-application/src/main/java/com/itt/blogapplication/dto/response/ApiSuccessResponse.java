@@ -1,7 +1,7 @@
 package com.itt.blogapplication.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.itt.blogapplication.constant.Constants;
+import com.itt.blogapplication.dto.ApiResponse;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,12 +11,9 @@ import org.springframework.http.ResponseEntity;
 @Getter
 @Setter
 @AllArgsConstructor
-public final class ApiSuccessResponse {
+public final class ApiSuccessResponse extends ApiResponse {
 
-    @JsonProperty(value = "success")
-    private boolean isSuccess;
     private Object data;
-    private String message;
 
     private ApiSuccessResponse() {
     }
