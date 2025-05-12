@@ -1,32 +1,24 @@
 package com.itt.assignment6.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.itt.assignment6.dto.Coordinates;
-import com.itt.assignment6.exception.ApiError;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import com.itt.assignment6.constant.ErrorMessage;
+import com.itt.assignment6.exception.ParsingException;
 
 public class Parser {
 
-    public List<Coordinates> parse(String jsonString) {
-        ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
-        List<Coordinates> coordinates = new ArrayList<>();
+    public <T> T parse(
+            String json,
+            TypeReference<T> classType
+    ) {
         try {
-            JsonNode rootNode = objectMapper.readTree(jsonString);
-
-            for (JsonNode node : rootNode) {
-                String latitude = node.get("lat").asText();
-                String longitude = node.get("lon").asText();
-                coordinates.add(new Coordinates(latitude, longitude));
-            }
-        } catch (IOException e) {
-            throw new ApiError(e.getMessage());
+            return objectMapper.readValue(json, classType);
+        } catch (JsonProcessingException e) {
+            throw new ParsingException(ErrorMessage.INVALID_FORMAT);
         }
-        return coordinates;
     }
 
 }
