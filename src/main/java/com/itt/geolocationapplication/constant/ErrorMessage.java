@@ -1,4 +1,4 @@
-package com.itt.assignment6.constant;
+package com.itt.geolocationapplication.constant;
 
 public class ErrorMessage {
 

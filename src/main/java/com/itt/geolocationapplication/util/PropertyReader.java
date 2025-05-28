@@ -1,6 +1,6 @@
-package com.itt.assignment6.util;
+package com.itt.geolocationapplication.util;
 
-import com.itt.assignment6.constant.ErrorMessage;
+import com.itt.geolocationapplication.constant.ErrorMessage;
 
 import java.io.IOException;
 import java.io.InputStream;

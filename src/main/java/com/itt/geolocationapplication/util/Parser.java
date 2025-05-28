@@ -1,10 +1,10 @@
-package com.itt.assignment6.util;
+package com.itt.geolocationapplication.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.itt.assignment6.constant.ErrorMessage;
-import com.itt.assignment6.exception.ParsingException;
+import com.itt.geolocationapplication.constant.ErrorMessage;
+import com.itt.geolocationapplication.exception.ParsingException;
 
 public class Parser {
 

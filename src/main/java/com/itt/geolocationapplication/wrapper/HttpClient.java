@@ -1,7 +1,7 @@
-package com.itt.assignment6.wrapper;
+package com.itt.geolocationapplication.wrapper;
 
 import com.itt.assignment3.constant.HttpMethod;
-import com.itt.assignment6.exception.ApiError;
+import com.itt.geolocationapplication.exception.ApiError;
 
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package com.itt.assignment6.dto;
+package com.itt.geolocationapplication.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -9,30 +9,13 @@ public class Coordinates {
     private String lon;
 
     public Coordinates() {
-
     }
 
-    public Coordinates(
-            String latitude,
-            String longitude
-    ) {
-        this.lat = latitude;
-        this.lon = longitude;
-    }
-
-    public String getLatitude() {
-        return lat;
-    }
-
-    public String getLongitude() {
-        return lon;
-    }
-
-    public void setLat(String lat) {
+    public void setLatitude(String lat) {
         this.lat = lat;
     }
 
-    public void setLon(String lon) {
+    public void setLongitude(String lon) {
         this.lon = lon;
     }
 

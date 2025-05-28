@@ -1,12 +1,12 @@
-package com.itt.assignment6.service;
+package com.itt.geolocationapplication.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.itt.assignment6.constant.Constants;
-import com.itt.assignment6.constant.PropertyKeys;
-import com.itt.assignment6.dto.Coordinates;
-import com.itt.assignment6.util.Parser;
-import com.itt.assignment6.util.PropertyReader;
-import com.itt.assignment6.wrapper.HttpClient;
+import com.itt.geolocationapplication.constant.Constants;
+import com.itt.geolocationapplication.constant.PropertyKeys;
+import com.itt.geolocationapplication.dto.Coordinates;
+import com.itt.geolocationapplication.util.Parser;
+import com.itt.geolocationapplication.util.PropertyReader;
+import com.itt.geolocationapplication.wrapper.HttpClient;
 
 import java.util.List;
 

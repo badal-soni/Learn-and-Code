@@ -1,8 +1,8 @@
-package com.itt.assignment6;
+package com.itt.geolocationapplication;
 
-import com.itt.assignment6.constant.Constants;
-import com.itt.assignment6.dto.Coordinates;
-import com.itt.assignment6.service.GeoLocationService;
+import com.itt.geolocationapplication.constant.Constants;
+import com.itt.geolocationapplication.dto.Coordinates;
+import com.itt.geolocationapplication.service.GeoLocationService;
 
 import java.util.List;
 import java.util.Scanner;

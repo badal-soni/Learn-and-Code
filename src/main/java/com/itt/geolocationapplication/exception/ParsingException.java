@@ -1,4 +1,4 @@
-package com.itt.assignment6.exception;
+package com.itt.geolocationapplication.exception;
 
 public class ParsingException extends RuntimeException {
 
