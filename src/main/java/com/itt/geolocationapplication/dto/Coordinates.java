@@ -8,9 +8,6 @@ public class Coordinates {
     private String lat;
     private String lon;
 
-    public Coordinates() {
-    }
-
     public void setLatitude(String lat) {
         this.lat = lat;
     }
