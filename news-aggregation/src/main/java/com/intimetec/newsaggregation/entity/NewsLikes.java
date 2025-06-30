@@ -27,14 +27,4 @@ public class NewsLikes extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private NewsInteractionType interactionType;
 
-    @PrePersist
-    public void prePersist() {
-        this.setTimestampsBeforeInsert();
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        this.setTimestampsBeforeUpdate();
-    }
-
 }

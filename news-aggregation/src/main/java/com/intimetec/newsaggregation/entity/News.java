@@ -31,6 +31,12 @@ public class News extends BaseEntity {
     @Column(nullable = false)
     private LocalDate publishedAt;
 
+    @Column(
+            nullable = false,
+            columnDefinition = "BOOLEAN DEFAULT FALSE"
+    )
+    private Boolean isHidden;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "news_to_category",
@@ -55,14 +61,10 @@ public class News extends BaseEntity {
     )
     private List<NewsLikes> userInteractions = new ArrayList<>();
 
-    @PrePersist
-    public void prePersist() {
-        this.setTimestampsBeforeInsert();
-    }
+    @OneToMany(mappedBy = "reportedNews")
+    private List<ReportedNews> reportedNews = new ArrayList<>();
 
-    @PreUpdate
-    public void preUpdate() {
-        this.setTimestampsBeforeUpdate();
-    }
+    @OneToMany(mappedBy = "news")
+    private List<NewsReadHistory> readHistory = new ArrayList<>();
 
 }

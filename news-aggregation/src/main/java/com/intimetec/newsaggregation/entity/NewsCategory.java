@@ -1,10 +1,7 @@
 package com.intimetec.newsaggregation.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +12,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(of = {"id", "categoryName"})
 public class NewsCategory {
 
     @Id
@@ -28,6 +26,12 @@ public class NewsCategory {
     )
     private String categoryName;
 
+    @Column(
+            nullable = false,
+            columnDefinition = "BOOLEAN DEFAULT FALSE"
+    )
+    private boolean isHidden;
+
     @ManyToMany(mappedBy = "categories", fetch = FetchType.EAGER)
     private List<News> news = new ArrayList<>();
 
@@ -39,12 +43,7 @@ public class NewsCategory {
 
     @PrePersist
     public void prePersist() {
-//        this.setTimestampsBeforeInsert();
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-//        this.setTimestampsBeforeUpdate();
+        this.isHidden = false;
     }
 
 }

@@ -11,10 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(
@@ -26,7 +23,7 @@ public class NotificationConfigurationController {
 
     private final NotificationConfigurationService notificationConfigurationService;
 
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiSuccessResponse> updateNotificationPreferences(
             @RequestBody UpdateNotificationPreferencesRequest updateNotificationPreferencesRequest,
             @CurrentUser User currentUser
@@ -36,6 +33,16 @@ public class NotificationConfigurationController {
                 .success(Constants.SUCCESS_TRUE)
                 .message(HttpStatus.CREATED.toString())
                 .httpStatus(HttpStatus.CREATED)
+                .build();
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiSuccessResponse> viewNotificationPreferences(@CurrentUser User currentUser) {
+        return ApiSuccessResponse.builder()
+                .success(Constants.SUCCESS_TRUE)
+                .data(notificationConfigurationService.getAllNotificationConfigurations(currentUser))
+                .message(HttpStatus.OK.getReasonPhrase())
+                .httpStatus(HttpStatus.OK)
                 .build();
     }
 

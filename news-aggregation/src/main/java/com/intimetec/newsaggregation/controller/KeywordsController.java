@@ -16,10 +16,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping(
         path = ApiVersions.V1_KEYWORDS,
-        consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE
 )
-
 @RequiredArgsConstructor
 public class KeywordsController {
 
@@ -38,12 +36,12 @@ public class KeywordsController {
                 .build();
     }
 
-    @PatchMapping(path = "/{id}/activate")
-    public ResponseEntity<ApiSuccessResponse> activateKeyword(
-            @PathVariable Long id,
+    @PutMapping(path = "/{keywordId}/status/toggle")
+    public ResponseEntity<ApiSuccessResponse> toggleActivateStatus(
+            @PathVariable Long keywordId,
             @CurrentUser User currentUser
     ) {
-        keywordService.activateKeyword(id, currentUser);
+        keywordService.toggleKeywordActiveStatus(keywordId, currentUser);
         return ApiSuccessResponse.builder()
                 .success(Constants.SUCCESS_TRUE)
                 .message(HttpStatus.CREATED.getReasonPhrase())
@@ -51,16 +49,13 @@ public class KeywordsController {
                 .build();
     }
 
-    @PatchMapping(path = "/{id}/deactivate")
-    public ResponseEntity<ApiSuccessResponse> deactivateKeyword(
-            @PathVariable Long id,
-            @CurrentUser User currentUser
-    ) {
-        keywordService.deactivateKeyword(id, currentUser);
+    @GetMapping
+    public ResponseEntity<ApiSuccessResponse> viewAllKeywords(@CurrentUser User currentUser) {
         return ApiSuccessResponse.builder()
                 .success(Constants.SUCCESS_TRUE)
-                .message(HttpStatus.CREATED.getReasonPhrase())
-                .httpStatus(HttpStatus.CREATED)
+                .data(keywordService.getAllKeywordsOfUser(currentUser))
+                .message(HttpStatus.OK.getReasonPhrase())
+                .httpStatus(HttpStatus.OK)
                 .build();
     }
 

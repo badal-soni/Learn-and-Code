@@ -19,6 +19,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 @ToString
+@EqualsAndHashCode(of = {"email"}, callSuper = true)
 public class User extends BaseEntity implements UserDetails {
 
     @Column(nullable = false)
@@ -47,12 +48,7 @@ public class User extends BaseEntity implements UserDetails {
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private List<NotificationConfiguration> notificationConfigurations;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "user_keyword",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "keyword_id")
-    )
+    @ManyToMany(mappedBy = "users", fetch = FetchType.EAGER)
     private Set<Keyword> keywords;
 
     @OneToMany(mappedBy = "receiver", fetch = FetchType.EAGER)
@@ -66,6 +62,12 @@ public class User extends BaseEntity implements UserDetails {
     )
     private List<NewsLikes> userInteractions = new ArrayList<>();
 
+    @OneToMany(mappedBy = "reportedBy")
+    private List<ReportedNews> reportedNews = new ArrayList<>();
+
+    @OneToMany(mappedBy = "readBy")
+    private List<NewsReadHistory> newsRead = new ArrayList<>();
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         final List<SimpleGrantedAuthority> authorities = new ArrayList<>();
@@ -78,16 +80,6 @@ public class User extends BaseEntity implements UserDetails {
     @Override
     public String getUsername() {
         return this.email;
-    }
-
-    @PrePersist
-    public void prePersist() {
-        this.setTimestampsBeforeInsert();
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        this.setTimestampsBeforeUpdate();
     }
 
 }

@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,8 +29,21 @@ public class NotificationController {
     public ResponseEntity<ApiSuccessResponse> viewNotifications(@CurrentUser User user) {
         return ApiSuccessResponse.builder()
                 .success(Constants.SUCCESS_TRUE)
-                .data(notificationService.viewNotifications(user))
-                .message("Notifications retrieved successfully")
+                .data(notificationService.getAllUnreadNotificationsOfUser(user))
+                .message(HttpStatus.OK.getReasonPhrase())
+                .httpStatus(HttpStatus.OK)
+                .build();
+    }
+
+    @GetMapping(path = "/{notificationId}")
+    public ResponseEntity<ApiSuccessResponse> viewNotificationById(
+            @PathVariable("notificationId") Long notificationId,
+            @CurrentUser User user
+    ) {
+        return ApiSuccessResponse.builder()
+                .success(Constants.SUCCESS_TRUE)
+                .data(notificationService.getNotificationById(notificationId, user))
+                .message(HttpStatus.OK.getReasonPhrase())
                 .httpStatus(HttpStatus.OK)
                 .build();
     }

@@ -3,12 +3,17 @@ package com.intimetec.newsaggregation.dto.response;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 @Data
 public class ExternalServerStatusResponse {
 
     @NotEmpty
     private String serverName;
     private boolean activeStatus;
-    private String lastAccessedDate;
+    private String apiKey;
+    private LocalDate lastAccessedDate;
+    private LocalDateTime lastFailedTime;
 
 }

@@ -4,6 +4,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @ToString
+@EqualsAndHashCode(of = "id")
 public abstract class BaseEntity {
 
     @Id
@@ -27,15 +29,5 @@ public abstract class BaseEntity {
 
     @UpdateTimestamp
     protected LocalDateTime updatedAt;
-
-    protected void setTimestampsBeforeInsert() {
-        // todo: comment createdAt and updatedAt and then test whether the timestamps gets created automatically or not
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    protected void setTimestampsBeforeUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
 
 }

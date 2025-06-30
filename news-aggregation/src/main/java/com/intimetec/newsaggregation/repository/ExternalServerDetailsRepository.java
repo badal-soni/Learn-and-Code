@@ -18,4 +18,7 @@ public interface ExternalServerDetailsRepository extends JpaRepository<ExternalS
     int updateActiveStatus(long serverId, boolean isActive);
 
     Optional<ExternalServerDetail> findByServerName(String newsApi);
+
+    boolean existsByApiKeyOrServerName(String apiKey, String serverName);
+
 }

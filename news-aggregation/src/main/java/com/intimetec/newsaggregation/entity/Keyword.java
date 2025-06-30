@@ -1,17 +1,24 @@
 package com.intimetec.newsaggregation.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "keywords")
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode(of = {"keyword", "parentCategory"}, callSuper = true)
 public class Keyword extends BaseEntity {
 
-    @Column(length = 50)
+    @Column(
+            nullable = false,
+            length = 50
+    )
     private String keyword;
 
     @Column(
@@ -24,19 +31,12 @@ public class Keyword extends BaseEntity {
     @JoinColumn(name = "parent_category")
     private NewsCategory parentCategory;
 
-    @ManyToMany(mappedBy = "keywords", fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "user_keyword",
+            joinColumns = @JoinColumn(name = "keyword_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
     private List<User> users = new ArrayList<>();
 
-    @PrePersist
-    public void prePersist() {
-        this.setTimestampsBeforeInsert();
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        this.setTimestampsBeforeUpdate();
-    }
-
 }
-// todo: keyword is unique inside a category i.e. two or more categories can have common keyword
-//       but one category cannot have same keyword

@@ -19,6 +19,9 @@ public class Notification extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private NotificationType notificationType;
 
+    @Column(nullable = false)
+    private Long newsId;
+
     @ManyToOne
     @JoinColumn(
             name = "receiver_id",

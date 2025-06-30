@@ -42,27 +42,28 @@ public class RequestInterceptor implements HandlerInterceptor {
             HttpServletResponse response,
             Object handler
     ) throws Exception {
-        System.out.println("Request UDI: " + request.getRequestURI());
-        for (String whiteListedUrl : WHITE_LISTED_URLS) {
-            if (request.getRequestURI().startsWith(whiteListedUrl)) {
-                System.out.println("White listed URL: " + request.getRequestURI());
-                return true; // allow access to white listed URLs
-            }
-        }
-
-        System.out.println("Pre handle invoked");
-        if (handler instanceof HandlerMethod) {
-            boolean ans = checkAccess(
-                    request,
-                    response,
-                    (HandlerMethod) handler
-            );
-            System.out.println("Ans: " + ans);
-//            return ans;
-            return false;
-        }
-        System.out.println("false return");
-        return false;
+        return true;
+//        System.out.println("Request UDI: " + request.getRequestURI());
+//        for (String whiteListedUrl : WHITE_LISTED_URLS) {
+//            if (request.getRequestURI().startsWith(whiteListedUrl)) {
+//                System.out.println("White listed URL: " + request.getRequestURI());
+//                return true; // allow access to white listed URLs
+//            }
+//        }
+//
+//        System.out.println("Pre handle invoked");
+//        if (handler instanceof HandlerMethod) {
+//            boolean ans = checkAccess(
+//                    request,
+//                    response,
+//                    (HandlerMethod) handler
+//            );
+//            System.out.println("Ans: " + ans);
+////            return ans;
+//            return false;
+//        }
+//        System.out.println("false return");
+//        return false;
     }
 
     private boolean checkAccess(

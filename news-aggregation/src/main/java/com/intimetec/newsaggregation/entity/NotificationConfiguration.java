@@ -3,10 +3,6 @@ package com.intimetec.newsaggregation.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "notifications_configurations")
@@ -24,11 +20,5 @@ public class NotificationConfiguration extends BaseEntity {
 
     @Column(columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean isEnabled;
-
-    @CreationTimestamp
-    protected LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    protected LocalDateTime updatedAt;
 
 }

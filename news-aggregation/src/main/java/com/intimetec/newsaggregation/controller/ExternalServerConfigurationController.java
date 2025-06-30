@@ -14,17 +14,17 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(path = ApiVersions.V1_SERVER_CONFIG)
+@RequestMapping(
+        path = ApiVersions.V1_SERVER_CONFIG,
+        produces = MediaType.APPLICATION_JSON_VALUE
+)
 @Secured(value = Constants.SPRING_ROLE_ADMIN)
 @RequiredArgsConstructor
 public class ExternalServerConfigurationController {
 
     private final ExternalServerConfigurationService externalServerConfigurationService;
 
-    @PostMapping(
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiSuccessResponse> registerExternalServer(@RequestBody RegisterExternalServerRequest registerExternalServerRequest) {
         externalServerConfigurationService.registerExternalServer(registerExternalServerRequest);
         return ApiSuccessResponse.builder()
@@ -34,7 +34,7 @@ public class ExternalServerConfigurationController {
                 .build();
     }
 
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping
     public ResponseEntity<ApiSuccessResponse> getAllServerConfigurations() {
         return ApiSuccessResponse.builder()
                 .success(Constants.SUCCESS_TRUE)
@@ -44,10 +44,7 @@ public class ExternalServerConfigurationController {
                 .build();
     }
 
-    @PatchMapping(
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
+    @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiSuccessResponse> updateExternalServerConfiguration(@RequestBody UpdateExternalServerDetailsRequest updateExternalServerDetailsRequest) {
         externalServerConfigurationService.updateExternalServer(updateExternalServerDetailsRequest);
         return ApiSuccessResponse.builder()

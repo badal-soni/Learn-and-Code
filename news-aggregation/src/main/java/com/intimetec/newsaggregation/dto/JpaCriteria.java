@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class JpaCriteria<T> {
 
-    private CriteriaBuilder criteriaBuilder;
+    private CriteriaBuilder builder;
     private CriteriaQuery<T> query;
     private Root<T> root;
 

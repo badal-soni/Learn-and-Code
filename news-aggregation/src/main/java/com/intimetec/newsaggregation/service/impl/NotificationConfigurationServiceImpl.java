@@ -1,20 +1,24 @@
 package com.intimetec.newsaggregation.service.impl;
 
+import com.intimetec.newsaggregation.dto.event.UserRegisteredEvent;
 import com.intimetec.newsaggregation.dto.request.UpdateNotificationPreferencesRequest;
+import com.intimetec.newsaggregation.dto.response.AllNotificationConfigurations;
+import com.intimetec.newsaggregation.dto.response.KeywordResponse;
+import com.intimetec.newsaggregation.dto.response.NewsConfigurationResponse;
 import com.intimetec.newsaggregation.entity.NewsCategory;
 import com.intimetec.newsaggregation.entity.NotificationConfiguration;
 import com.intimetec.newsaggregation.entity.User;
 import com.intimetec.newsaggregation.repository.NewsCategoryRepository;
 import com.intimetec.newsaggregation.repository.NotificationConfigurationRepository;
+import com.intimetec.newsaggregation.repository.UserRepository;
 import com.intimetec.newsaggregation.service.NotificationConfigurationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +26,7 @@ public class NotificationConfigurationServiceImpl implements NotificationConfigu
 
     private final NotificationConfigurationRepository notificationConfigurationRepository;
     private final NewsCategoryRepository newsCategoryRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
@@ -29,35 +34,101 @@ public class NotificationConfigurationServiceImpl implements NotificationConfigu
             UpdateNotificationPreferencesRequest updateNotificationPreferencesRequest,
             User user
     ) {
-        // todo: after user registration, add default notification preferences for the user (all are disabled)
-        Map<String, Boolean> categoryNameToEnableStatus = new HashMap<>();
-        for (UpdateNotificationPreferencesRequest.NotificationPreference preference : updateNotificationPreferencesRequest.getPreferences()) {
-            categoryNameToEnableStatus.putIfAbsent(preference.newsCategoryName(), preference.shouldEnableNotification());
-        }
-        List<NotificationConfiguration> notificationConfigurations = notificationConfigurationRepository.findByUserAndNewsCategory(
-                user.getId(),
-                categoryNameToEnableStatus.keySet()
-        );
-        List<NotificationConfiguration> configuredNotificationConfigurations = new ArrayList<>();
-        notificationConfigurations.forEach(config -> {
-            config.setEnabled(categoryNameToEnableStatus.get(config.getNewsCategory().getCategoryName()));
-            configuredNotificationConfigurations.add(config);
-        });
+        List<NewsCategory> allNewsCategories = newsCategoryRepository.findAll();
+        List<NotificationConfiguration> existingNotificationConfigurations = notificationConfigurationRepository.findAllByUser(user);
 
-        notificationConfigurationRepository.saveAll(configuredNotificationConfigurations);
+        Map<String, NotificationConfiguration> existingConfigurationsMap = new HashMap<>();
+        for (NotificationConfiguration config : existingNotificationConfigurations) {
+            existingConfigurationsMap.put(config.getNewsCategory().getCategoryName(), config);
+        }
+
+        Map<String, Boolean> categoryNameToEnabledStatusMap = new HashMap<>();
+        for (UpdateNotificationPreferencesRequest.NotificationPreference preference : updateNotificationPreferencesRequest.getPreferences()) {
+            categoryNameToEnabledStatusMap.put(preference.newsCategoryName(), preference.shouldEnableNotification());
+        }
+
+        List<NotificationConfiguration> updatedNotificationConfigurations = new ArrayList<>();
+        for (NewsCategory newsCategory : allNewsCategories) {
+            String categoryName = newsCategory.getCategoryName();
+            NotificationConfiguration configuration = existingConfigurationsMap.get(categoryName);
+
+            if (configuration != null && categoryNameToEnabledStatusMap.containsKey(categoryName)) {
+                configuration.setEnabled(categoryNameToEnabledStatusMap.get(categoryName));
+            } else {
+                boolean isEnabled = categoryNameToEnabledStatusMap.getOrDefault(categoryName, false);
+                configuration = new NotificationConfiguration();
+                configuration.setNewsCategory(newsCategory);
+                configuration.setUser(user);
+                configuration.setEnabled(isEnabled);
+            }
+            updatedNotificationConfigurations.add(configuration);
+        }
+        notificationConfigurationRepository.saveAll(updatedNotificationConfigurations);
     }
 
-    @Override
-    @Transactional
-    public void populateDefaultNotificationPreferences(User user) {
+    @EventListener
+    public void populateDefaultNotificationPreferences(UserRegisteredEvent userRegisteredEvent) {
         final List<NewsCategory> newsCategories = newsCategoryRepository.findAll();
-        for (NewsCategory newsCategory : newsCategories) {
+        final Optional<User> user = userRepository.findById(userRegisteredEvent.getUserId());
+        newsCategories.forEach(newsCategory -> {
             NotificationConfiguration notificationConfiguration = new NotificationConfiguration();
-            notificationConfiguration.setUser(user);
+            notificationConfiguration.setUser(user.get());
             notificationConfiguration.setNewsCategory(newsCategory);
             notificationConfiguration.setEnabled(false); // Default to disabled
             notificationConfigurationRepository.saveAndFlush(notificationConfiguration);
-        }
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AllNotificationConfigurations getAllNotificationConfigurations(User user) {
+        List<NewsCategory> allNewsCategories = newsCategoryRepository.findAllByIsHiddenFalse();
+        List<NotificationConfiguration> existingConfigurations = notificationConfigurationRepository.findAllByUserAndNewsCategoryIsHiddenFalse(user);
+        return mapToViewAllNotificationConfiguration(user.getId(), allNewsCategories, existingConfigurations);
+    }
+
+    private AllNotificationConfigurations mapToViewAllNotificationConfiguration(
+            long userId,
+            List<NewsCategory> allNewsCategories,
+            List<NotificationConfiguration> existingConfigurations
+    ) {
+        Map<String, NotificationConfiguration> existingConfigurationsMap = existingConfigurations
+                .stream()
+                .collect(Collectors.toMap(
+                        config -> config.getNewsCategory().getCategoryName(),
+                        config -> config
+                ));
+
+        List<NewsConfigurationResponse> newsConfigurationResponses = allNewsCategories.stream()
+                .map(category -> {
+                    NotificationConfiguration existingConfig = existingConfigurationsMap.get(category.getCategoryName());
+                    boolean categoryEnabled = existingConfig != null && existingConfig.isEnabled();
+                    List<KeywordResponse> keywordResponses = category.getKeywords().stream()
+                            .map(keyword -> {
+                                boolean isKeywordEnabled = existingConfig != null &&
+                                        existingConfig.isEnabled() &&
+                                        keyword.getParentCategory().getCategoryName().equals(existingConfig.getNewsCategory().getCategoryName());
+                                KeywordResponse keywordResponse = new KeywordResponse();
+                                keywordResponse.setKeyword(keyword.getKeyword());
+                                keywordResponse.setParentCategory(keyword.getParentCategory().getCategoryName());
+                                keywordResponse.setEnabled(isKeywordEnabled);
+                                keywordResponse.setKeywordId(keyword.getId());
+                                return keywordResponse;
+                            })
+                            .collect(Collectors.toList());
+
+                    NewsConfigurationResponse categoryResponse = new NewsConfigurationResponse();
+                    categoryResponse.setCategoryName(category.getCategoryName());
+                    categoryResponse.setEnabled(categoryEnabled);
+                    categoryResponse.setKeywords(keywordResponses);
+                    return categoryResponse;
+                })
+                .collect(Collectors.toList());
+
+        AllNotificationConfigurations allConfigs = new AllNotificationConfigurations();
+        allConfigs.setUserId(userId);
+        allConfigs.setNewsCategories(newsConfigurationResponses);
+        return allConfigs;
     }
 
 }

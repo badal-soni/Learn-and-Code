@@ -20,7 +20,7 @@ public class AtmController {
 
     private final AtmService atmService;
 
-    @PatchMapping(
+    @PutMapping(
             path = "/withdraw",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE

@@ -1,6 +1,7 @@
 package com.intimetec.newsaggregation.service.impl;
 
 import com.intimetec.newsaggregation.constant.Constants;
+import com.intimetec.newsaggregation.dto.event.UserRegisteredEvent;
 import com.intimetec.newsaggregation.dto.request.SignInRequest;
 import com.intimetec.newsaggregation.dto.request.SignUpRequest;
 import com.intimetec.newsaggregation.dto.response.SignInResponse;
@@ -11,10 +12,10 @@ import com.intimetec.newsaggregation.exception.NotFoundException;
 import com.intimetec.newsaggregation.repository.UserRepository;
 import com.intimetec.newsaggregation.repository.UserRolesRepository;
 import com.intimetec.newsaggregation.service.AuthService;
-import com.intimetec.newsaggregation.service.NotificationConfigurationService;
 import com.intimetec.newsaggregation.util.JwtUtility;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +33,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRolesRepository userRolesRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final JwtUtility jwtUtility;
-    private final NotificationConfigurationService notificationConfigurationService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     @Transactional
@@ -51,11 +52,19 @@ public class AuthServiceImpl implements AuthService {
                 .password(bCryptPasswordEncoder.encode(signUpRequest.getPassword()))
                 .roles(Set.of(userRole.get()))
                 .build();
-        user = userRepository.save(user);
+        user = userRepository.saveAndFlush(user);
         SignUpResponse signUpResponse = new SignUpResponse();
         signUpResponse.setId(user.getId());
-        notificationConfigurationService.populateDefaultNotificationPreferences(user);
+        publishUserRegisteredEvent(user);
         return signUpResponse;
+    }
+
+    private void publishUserRegisteredEvent(User user) {
+        UserRegisteredEvent userRegisteredEvent = new UserRegisteredEvent();
+        userRegisteredEvent.setUserId(user.getId());
+        userRegisteredEvent.setEmail(user.getEmail());
+        userRegisteredEvent.setUsername(user.getUsername());
+        applicationEventPublisher.publishEvent(userRegisteredEvent);
     }
 
     @Override
@@ -64,15 +73,11 @@ public class AuthServiceImpl implements AuthService {
                 .findByEmail(signInRequest.getEmail())
                 .orElseThrow(() -> new NotFoundException("User not found with email: " + signInRequest.getEmail()));
 
-        log.info("Password from request: {} ", signInRequest.getPassword());
-        log.info("Password from user: {}", user.getPassword());
-
         if (!bCryptPasswordEncoder.matches(signInRequest.getPassword(), user.getPassword())) {
             throw new NotFoundException("Invalid credentials");
         }
 
         final String accessToken = jwtUtility.generateToken(signInRequest.getEmail());
-        System.out.println("Generated Access Token: " + accessToken);
         return new SignInResponse(accessToken, user.getRoles().stream().map(UserRole::getRoleName).collect(Collectors.toSet()));
     }
 

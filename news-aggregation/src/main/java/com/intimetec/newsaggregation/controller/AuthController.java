@@ -16,7 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(path = ApiVersions.V1_AUTH)
+@RequestMapping(
+        path = ApiVersions.V1_AUTH,
+        produces = MediaType.APPLICATION_JSON_VALUE
+)
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -24,8 +27,7 @@ public class AuthController {
 
     @PostMapping(
             path = "/sign-up",
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE
+            consumes = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<ApiSuccessResponse> signUp(@RequestBody SignUpRequest signUpRequest) {
         return ApiSuccessResponse.builder()
@@ -38,8 +40,7 @@ public class AuthController {
 
     @PostMapping(
             path = "/sign-in",
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE
+            consumes = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<ApiSuccessResponse> signIn(@RequestBody SignInRequest signInRequest) {
         return ApiSuccessResponse.builder()

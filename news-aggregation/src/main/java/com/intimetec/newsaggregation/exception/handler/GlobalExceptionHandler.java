@@ -34,6 +34,11 @@ public class GlobalExceptionHandler {
         return buildApiErrorResponse(HttpStatus.FORBIDDEN, exception.getMessage());
     }
 
+    @ExceptionHandler(Throwable.class)
+    public ResponseEntity<ApiErrorResponse> handleGlobalException(Throwable exception) {
+        return buildApiErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
+    }
+
     private ResponseEntity<ApiErrorResponse> buildApiErrorResponse(
             @NotNull HttpStatus status,
             @NotNull String message

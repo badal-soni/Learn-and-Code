@@ -1,5 +1,11 @@
 package com.itt.designpatterns.uicomponent;
 
+import com.itt.designpatterns.uicomponent.factory.MacOSFactory;
+import com.itt.designpatterns.uicomponent.factory.UIFactory;
+import com.itt.designpatterns.uicomponent.factory.WindowsFactory;
+import com.itt.designpatterns.uicomponent.product.Button;
+import com.itt.designpatterns.uicomponent.product.Checkbox;
+
 public class ComponentApplication {
 
     public static void main(String[] args) {

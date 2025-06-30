@@ -8,6 +8,8 @@ public class CreateKeywordRequest {
 
     @NotBlank
     private String keyword;
+
+    @NotBlank
     private String parentCategory;
 
 }

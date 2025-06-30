@@ -10,6 +10,7 @@ public final class ApiVersions {
     public static final String V1_NEWS = V1 + "/news";
     public static final String V1_NOTIFICATIONS_CONFIGURATION = V1 + "/notifications-configurations";
     public static final String V1_NOTIFICATIONS = V1 + "/notifications";
+    public static final String V1_DASHBOARD = V1 + "/dashboard";
 
     private ApiVersions() {
     }

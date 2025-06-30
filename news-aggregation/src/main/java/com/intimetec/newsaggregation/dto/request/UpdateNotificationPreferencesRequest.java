@@ -11,7 +11,6 @@ import java.util.List;
 @Data
 public class UpdateNotificationPreferencesRequest {
 
-    // todo: add validation that each category can be added only once
     public record NotificationPreference(
             @NotBlank @Pattern(regexp = "^[a-z]+$") String newsCategoryName,
             boolean shouldEnableNotification

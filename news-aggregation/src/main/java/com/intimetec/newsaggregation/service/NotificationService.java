@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface NotificationService {
 
-    List<NotificationResponse> viewNotifications(User user);
+    List<NotificationResponse> getAllUnreadNotificationsOfUser(User user);
+
+    NotificationResponse getNotificationById(Long notificationId, User user);
 
 }

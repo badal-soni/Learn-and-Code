@@ -1,21 +1,24 @@
 package com.intimetec.newsaggregation.repository;
 
 import com.intimetec.newsaggregation.entity.NotificationConfiguration;
+import com.intimetec.newsaggregation.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
 import java.util.List;
 
 @Repository
 public interface NotificationConfigurationRepository extends JpaRepository<NotificationConfiguration, Long> {
 
-    // todo: after creating the user, populate all the data related to the categories
-    @Query(value = "SELECT config FROM NotificationConfiguration config LEFT JOIN FETCH config.newsCategory category WHERE config.newsCategory.categoryName IN :categoryName AND config.user.id = :userId")
-    List<NotificationConfiguration> findByUserAndNewsCategory(Long userId, Collection<String> categoryName);
-
-    @Query(value = "SELECT config FROM NotificationConfiguration config LEFT JOIN FETCH config.newsCategory category WHERE config.isEnabled = true")
+    @Query(value = "SELECT config FROM NotificationConfiguration config LEFT JOIN FETCH config.newsCategory category WHERE config.isEnabled = true AND config.newsCategory.isHidden = FALSE")
     List<NotificationConfiguration> findAllEnabled();
+
+    @Query(value = "SELECT config FROM NotificationConfiguration config LEFT JOIN FETCH config.newsCategory category WHERE config.user = :user AND config.isEnabled = true AND config.newsCategory.isHidden = FALSE")
+    List<NotificationConfiguration> findAllByUserAndNewsCategoryIsHiddenFalse(@Param("user") User user);
+
+    @Query(value = "SELECT config FROM NotificationConfiguration config LEFT JOIN FETCH config.newsCategory category WHERE config.user = :user")
+    List<NotificationConfiguration> findAllByUser(@Param("user") User user);
 
 }

@@ -1,67 +1,84 @@
 package com.intimetec.newsaggregation.client.view;
 
+import com.intimetec.newsaggregation.client.constant.MenuChoices;
+import com.intimetec.newsaggregation.client.constant.InputPrompts;
+import com.intimetec.newsaggregation.client.context.UserContextHolder;
 import com.intimetec.newsaggregation.client.dto.request.UserSignInRequest;
 import com.intimetec.newsaggregation.client.dto.request.UserSignUpRequest;
+import com.intimetec.newsaggregation.client.dto.response.UserSignInResponse;
+import com.intimetec.newsaggregation.client.factory.MenuFactory;
 import com.intimetec.newsaggregation.client.service.AuthService;
-import com.intimetec.newsaggregation.client.util.Logger;
+import com.intimetec.newsaggregation.client.util.CommonUtility;
+import com.intimetec.newsaggregation.client.util.ConsoleLogger;
 
 import java.util.Scanner;
 
 public class WelcomeMenu {
 
     private final AuthService authService;
-    private final Logger logger;
+    private final ConsoleLogger consoleLogger;
+    private final Scanner inputReader;
 
     public WelcomeMenu() {
         this.authService = new AuthService();
-        this.logger = new Logger();
+        this.consoleLogger = new ConsoleLogger();
+        this.inputReader = new Scanner(System.in);
     }
 
     public boolean showWelcomeMenu() {
-        logger.info("Welcome to the News Aggregator application. Please choose the options below.");
-        logger.info("1. Login");
-        logger.info("2. Sign up");
-        logger.info("3. Exit");
-
-        Scanner inputReader = new Scanner(System.in);
+        for (String welcomeMenuChoice : MenuChoices.WELCOME_MENU_CHOICES) {
+            consoleLogger.info(welcomeMenuChoice);
+        }
         int choice = inputReader.nextInt();
-
-        System.out.println("Choice: " + choice);
 
         if (choice == 1) {
             signIn(inputReader);
         } else if (choice == 2) {
             signUp(inputReader);
         } else if (choice == 3) {
-            // todo: signout
+            UserContextHolder.accessToken = null;
             return false;
         }
-        return false;
+        return true;
     }
 
     private void signIn(Scanner scanner) {
         UserSignInRequest signInRequest = new UserSignInRequest();
 
-        logger.info("Enter email: ");
+        consoleLogger.info(InputPrompts.ENTER_EMAIL);
         signInRequest.setEmail(scanner.next());
 
-        logger.info("Enter password: ");
+        consoleLogger.info(InputPrompts.ENTER_PASSWORD);
         signInRequest.setPassword(scanner.next());
 
-        this.authService.signIn(signInRequest);
+        UserSignInResponse userSignInResponse = this.authService.signIn(signInRequest);
+        if (userSignInResponse != null) {
+            UserContextHolder.accessToken = userSignInResponse.getJwtToken();
+            UserContextHolder.isLoggedIn = true;
+            renderView(userSignInResponse);
+        }
     }
 
     private void signUp(Scanner scanner) {
         UserSignUpRequest signUpRequest = new UserSignUpRequest();
-        logger.info("Enter email: ");
+        consoleLogger.info(InputPrompts.ENTER_EMAIL);
         signUpRequest.setEmail(scanner.next());
 
-        logger.info("Enter username: ");
+        consoleLogger.info(InputPrompts.ENTER_USERNAME);
         signUpRequest.setUsername(scanner.next());
 
-        logger.info("Enter password:");
+        consoleLogger.info(InputPrompts.ENTER_PASSWORD);
         signUpRequest.setPassword(scanner.next());
         this.authService.signUp(signUpRequest);
+    }
+
+    private void renderView(UserSignInResponse userSignInResponse) {
+        while (UserContextHolder.accessToken != null) {
+            UserContextHolder.accessToken = userSignInResponse.getJwtToken();
+            MenuFactory
+                    .getMenuPresenter(CommonUtility.getFirstRole(userSignInResponse.getRoles()))
+                    .showMenu();
+        }
     }
 
 }

@@ -1,18 +1,21 @@
 package com.intimetec.newsaggregation.service.impl;
 
 import com.intimetec.newsaggregation.dto.request.CreateKeywordRequest;
+import com.intimetec.newsaggregation.dto.response.KeywordResponse;
 import com.intimetec.newsaggregation.entity.Keyword;
 import com.intimetec.newsaggregation.entity.NewsCategory;
 import com.intimetec.newsaggregation.entity.User;
 import com.intimetec.newsaggregation.exception.BadRequestException;
-import com.intimetec.newsaggregation.repository.NewsCategoryRepository;
 import com.intimetec.newsaggregation.repository.KeywordsRepository;
+import com.intimetec.newsaggregation.repository.NewsCategoryRepository;
 import com.intimetec.newsaggregation.service.KeywordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 @Service
 @RequiredArgsConstructor
@@ -26,11 +29,14 @@ public class KeywordServiceImpl implements KeywordService {
         if (keywordsRepository.existsByKeywordAndUserIdAndCategoryName(createKeywordRequest.getKeyword(), user.getId(), createKeywordRequest.getParentCategory())) {
             throw new BadRequestException("You have already created this keyword under " + createKeywordRequest.getParentCategory());
         }
-        Optional<NewsCategory> optionalNewsCategory = newsCategoryRepository.findByCategoryName(createKeywordRequest.getKeyword());
+        Optional<NewsCategory> optionalNewsCategory = newsCategoryRepository.findByCategoryName(createKeywordRequest.getParentCategory());
         optionalNewsCategory.ifPresentOrElse(newsCategory -> {
             Keyword keyword = new Keyword();
             keyword.setKeyword(createKeywordRequest.getKeyword());
             keyword.setActive(true);
+            if (keyword.getUsers() == null) {
+                keyword.setUsers(new ArrayList<>());
+            }
             keyword.getUsers().add(user);
             keyword.setParentCategory(newsCategory);
             keywordsRepository.save(keyword);
@@ -40,37 +46,29 @@ public class KeywordServiceImpl implements KeywordService {
     }
 
     @Override
-    public void activateKeyword(Long keywordId, User user) {
-        Consumer<Keyword> consumer = (keyWord) -> keyWord.setActive(true);
-        updateActiveStatus(
-                keywordId,
-                user,
-                consumer
-        );
+    public void toggleKeywordActiveStatus(Long keywordId, User user) {
+        Keyword keyword = keywordsRepository.findByIdAndUserId(keywordId, user.getId())
+                .orElseThrow(() -> new BadRequestException("Invalid keyword id"));
+
+        keyword.setActive(!keyword.isActive());
+        keywordsRepository.save(keyword);
     }
 
     @Override
-    public void deactivateKeyword(Long keywordId, User user) {
-        Consumer<Keyword> consumer = (keyWord) -> keyWord.setActive(false);
-        updateActiveStatus(
-                keywordId,
-                user,
-                consumer
-        );
-    }
-
-    private void updateActiveStatus(
-            Long keywordId,
-            User user,
-            Consumer<Keyword> consumer
-    ) {
-        Optional<Keyword> optionalKeyword = keywordsRepository.findByIdAndUserId(keywordId, user.getId());
-        optionalKeyword.ifPresentOrElse(keyWord -> {
-            consumer.accept(keyWord);
-            keywordsRepository.save(keyWord);
-        }, () -> {
-            throw new BadRequestException("You have not created this keyword");
-        });
+    @Transactional(readOnly = true)
+    public List<KeywordResponse> getAllKeywordsOfUser(User user) {
+        return user
+                .getKeywords()
+                .stream()
+                .map(keyword -> {
+                    KeywordResponse keywordResponse = new KeywordResponse();
+                    keywordResponse.setEnabled(keyword.isActive());
+                    keywordResponse.setKeyword(keyword.getKeyword());
+                    keywordResponse.setParentCategory(keyword.getParentCategory().getCategoryName());
+                    keywordResponse.setKeywordId(keyword.getId());
+                    return keywordResponse;
+                })
+                .toList();
     }
 
 }

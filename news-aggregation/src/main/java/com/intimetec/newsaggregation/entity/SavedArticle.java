@@ -16,14 +16,4 @@ public class SavedArticle extends BaseEntity {
     @JoinColumn(name = "news_article", nullable = false)
     private News newsArticle;
 
-    @PrePersist
-    public void prePersist() {
-        this.setTimestampsBeforeInsert();
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        this.setTimestampsBeforeUpdate();
-    }
-
 }
