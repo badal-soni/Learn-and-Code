@@ -2,10 +2,10 @@ package com.intimetec.newsaggregation.controller;
 
 import com.intimetec.newsaggregation.annotation.CurrentUser;
 import com.intimetec.newsaggregation.constant.ApiVersions;
-import com.intimetec.newsaggregation.constant.Constants;
 import com.intimetec.newsaggregation.dto.response.ApiSuccessResponse;
 import com.intimetec.newsaggregation.entity.User;
 import com.intimetec.newsaggregation.service.NotificationService;
+import com.intimetec.newsaggregation.util.HttpUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -27,12 +27,10 @@ public class NotificationController {
 
     @GetMapping
     public ResponseEntity<ApiSuccessResponse> viewNotifications(@CurrentUser User user) {
-        return ApiSuccessResponse.builder()
-                .success(Constants.SUCCESS_TRUE)
-                .data(notificationService.getAllUnreadNotificationsOfUser(user))
-                .message(HttpStatus.OK.getReasonPhrase())
-                .httpStatus(HttpStatus.OK)
-                .build();
+        return HttpUtil.sendResponseWithData(
+                notificationService.getAllUnreadNotificationsOfUser(user),
+                HttpStatus.OK
+        );
     }
 
     @GetMapping(path = "/{notificationId}")
@@ -40,12 +38,10 @@ public class NotificationController {
             @PathVariable("notificationId") Long notificationId,
             @CurrentUser User user
     ) {
-        return ApiSuccessResponse.builder()
-                .success(Constants.SUCCESS_TRUE)
-                .data(notificationService.getNotificationById(notificationId, user))
-                .message(HttpStatus.OK.getReasonPhrase())
-                .httpStatus(HttpStatus.OK)
-                .build();
+        return HttpUtil.sendResponseWithData(
+                notificationService.getNotificationById(notificationId, user),
+                HttpStatus.OK
+        );
     }
 
 }

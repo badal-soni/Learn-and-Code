@@ -1,5 +1,6 @@
 package com.intimetec.newsaggregation.service.impl;
 
+import com.intimetec.newsaggregation.constant.Messages;
 import com.intimetec.newsaggregation.dto.request.CreateCategoryRequest;
 import com.intimetec.newsaggregation.dto.response.NewsCategoryResponse;
 import com.intimetec.newsaggregation.entity.NewsCategory;
@@ -23,7 +24,7 @@ public class NewsCategoryServiceImpl implements NewsCategoryService {
     public void createCategory(CreateCategoryRequest createCategoryRequest) {
         final String categoryName = createCategoryRequest.getCategoryName().toLowerCase();
         if (newsCategoryRepository.existsByCategoryName(categoryName)) {
-            throw new BadRequestException("Category " + categoryName + " already exists");
+            throw new BadRequestException(String.format(Messages.NEWS_CATEGORY_ALREADY_EXISTS, categoryName));
         }
         NewsCategory category = new NewsCategory();
         category.setCategoryName(categoryName);
@@ -49,6 +50,11 @@ public class NewsCategoryServiceImpl implements NewsCategoryService {
     @Override
     public NewsCategoryResponse getAllHiddenCategories() {
         return mapToNewsCategoryResponse(newsCategoryRepository.findAllByIsHiddenTrue());
+    }
+
+    @Override
+    public NewsCategoryResponse getAllUnHiddenCategories() {
+        return mapToNewsCategoryResponse(newsCategoryRepository.findAllByIsHiddenFalse());
     }
 
     private NewsCategoryResponse mapToNewsCategoryResponse(List<NewsCategory> newsCategories) {

@@ -1,10 +1,12 @@
 package com.intimetec.newsaggregation.client.view;
 
 import com.intimetec.newsaggregation.client.constant.MenuChoices;
+import com.intimetec.newsaggregation.client.constant.Messages;
 import com.intimetec.newsaggregation.client.context.UserContextHolder;
 import com.intimetec.newsaggregation.client.service.NewsService;
-import com.intimetec.newsaggregation.client.util.ConsoleLogger;
+import com.intimetec.newsaggregation.client.logger.ConsoleLogger;
 import com.intimetec.newsaggregation.dto.request.SearchNewsRequest;
+import com.intimetec.newsaggregation.dto.response.NewsResponse;
 
 import java.time.LocalDate;
 import java.util.Scanner;
@@ -15,7 +17,6 @@ public class SearchMenuPresenter implements MenuPresenter {
     private final HeadlineMenu headlineMenu;
     private final ConsoleLogger consoleLogger;
     private final Scanner inputReader;
-    private boolean isLoggedIn = false;
 
     public SearchMenuPresenter() {
         this.newsService = new NewsService();
@@ -26,13 +27,14 @@ public class SearchMenuPresenter implements MenuPresenter {
 
     @Override
     public void showMenu() {
-        this.isLoggedIn = true;
-        while (this.isLoggedIn) {
-            this.renderOptions();
+        while (UserContextHolder.isLoggedIn) {
+            if (this.renderOptions()) {
+                return;
+            }
         }
     }
 
-    private void renderOptions() {
+    private boolean renderOptions() {
         for (String option : MenuChoices.SEARCH_NEWS_MENU) {
             consoleLogger.info(option);
         }
@@ -42,34 +44,35 @@ public class SearchMenuPresenter implements MenuPresenter {
             this.searchNews();
             this.headlineMenu.saveNews();
         } else if (choice == 2) {
-            this.isLoggedIn = false;
             UserContextHolder.clearContext();
+            return false;
         }
+        return true;
     }
 
     private void searchNews() {
         SearchNewsRequest searchNewsRequest = new SearchNewsRequest();
-        consoleLogger.info("Enter search text");
+        consoleLogger.info(Messages.ENTER_SEARCH_TEXT);
         String searchText = inputReader.next().trim();
         searchNewsRequest.setSearchQuery(searchText);
 
-        consoleLogger.info("Do you want to give start date (y/n) ?");
+        consoleLogger.info(Messages.WANT_TO_GIVE_START_DATE);
         char choice = inputReader.next().charAt(0);
         if (Character.toLowerCase(choice) == 'y') {
-            consoleLogger.info("Enter start date (yyyy-mm-dd): ");
+            consoleLogger.info(Messages.ENTER_START_DATE);
             String startDate = inputReader.next().trim();
             searchNewsRequest.setFrom(LocalDate.parse(startDate));
         }
-        consoleLogger.info("Do you want to give end date (y/n) ?");
+        consoleLogger.info(Messages.WANT_TO_GIVE_END_DATE);
         choice = inputReader.next().charAt(0);
         if (Character.toLowerCase(choice) == 'y') {
-            consoleLogger.info("Enter end date (yyyy-mm-dd): ");
+            consoleLogger.info(Messages.ENTER_END_DATE);
             String endDate = inputReader.next().trim();
             searchNewsRequest.setFrom(LocalDate.parse(endDate));
         }
 
         searchNewsRequest.setIsAscendingOrder(null);
-        consoleLogger.info("Do you want to sort by likes ? (1 for ascending, -1 for descending and 0 for no sorting");
+        consoleLogger.info(Messages.SORT_BY_LIKES);
         int sortOrder = inputReader.nextInt();
         if (sortOrder == 1) {
             searchNewsRequest.setIsAscendingOrder(true);
@@ -77,8 +80,10 @@ public class SearchMenuPresenter implements MenuPresenter {
             searchNewsRequest.setIsAscendingOrder(false);
         }
 
-        this.newsService.searchNews(searchNewsRequest);
+        var newsResponses = this.newsService.searchNews(searchNewsRequest);
+        for (NewsResponse newsResponse: newsResponses) {
+            consoleLogger.info(newsResponse);
+        }
     }
-
 
 }

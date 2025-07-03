@@ -17,7 +17,7 @@ public class ReportedNewsResponse {
 
     private Long newsId;
     private String headline;
-    private String description;
+    private String reportReason;
     private String source;
     private String url;
     private boolean isHidden;
@@ -25,7 +25,6 @@ public class ReportedNewsResponse {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     public LocalDate publishedAt;
     private List<String> categories;
-    private String reportDescription;
     private String reportedByUserEmail;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)

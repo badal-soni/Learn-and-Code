@@ -1,10 +1,12 @@
 package com.intimetec.newsaggregation.client.view;
 
 import com.intimetec.newsaggregation.client.constant.MenuChoices;
+import com.intimetec.newsaggregation.client.constant.Messages;
 import com.intimetec.newsaggregation.client.context.UserContextHolder;
+import com.intimetec.newsaggregation.client.displayer.SavedNewsDisplayer;
 import com.intimetec.newsaggregation.client.service.DashboardService;
 import com.intimetec.newsaggregation.client.service.NewsService;
-import com.intimetec.newsaggregation.client.util.ConsoleLogger;
+import com.intimetec.newsaggregation.client.logger.ConsoleLogger;
 import com.intimetec.newsaggregation.dto.response.SavedNewsResponse;
 
 import java.util.List;
@@ -16,7 +18,6 @@ public class SavedArticleMenu implements MenuPresenter {
     private final DashboardService dashboardService;
     private final ConsoleLogger consoleLogger;
     private final Scanner inputReader;
-    private boolean isLoggedIn = false;
 
     public SavedArticleMenu() {
         this.newsService = new NewsService();
@@ -27,14 +28,19 @@ public class SavedArticleMenu implements MenuPresenter {
 
     @Override
     public void showMenu() {
-        this.isLoggedIn = true;
-        while (this.isLoggedIn) {
-            this.renderOptions();
+        while (UserContextHolder.isLoggedIn) {
+            if (this.renderOptions()) {
+                return;
+            }
         }
     }
 
-    private void renderOptions() {
-        this.showSavedNews();
+    private boolean renderOptions() {
+        boolean hasNews = this.showSavedNews();
+        if (!hasNews) {
+            consoleLogger.info(Messages.NOT_SAVED_ANY_NEWS);
+            return true;
+        }
         for (String option: MenuChoices.SAVED_ARTICLES_MENU) {
             consoleLogger.info(option);
         }
@@ -43,18 +49,22 @@ public class SavedArticleMenu implements MenuPresenter {
         if (choice == 1) {
             this.unSaveNews();
         } else if (choice == 3) {
-            this.isLoggedIn = false;
             UserContextHolder.clearContext();
+            return false;
         }
+        return true;
     }
 
-    private void showSavedNews() {
+    private boolean showSavedNews() {
         List<SavedNewsResponse> savedNewsResponseList = this.dashboardService.getSavedNews();
-        savedNewsResponseList.forEach(consoleLogger::info);
+        if (!savedNewsResponseList.isEmpty()) {
+            SavedNewsDisplayer.displaySavedNews(savedNewsResponseList);
+        }
+        return !savedNewsResponseList.isEmpty();
     }
 
     private void unSaveNews() {
-        consoleLogger.info("Enter the news id: ");
+        consoleLogger.info(Messages.ENTER_NEWS_ID);
         Long newsId = inputReader.nextLong();
         this.newsService.unSaveNews(newsId);
     }

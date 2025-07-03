@@ -5,8 +5,8 @@ import com.intimetec.newsaggregation.constant.ApiVersions;
 import com.intimetec.newsaggregation.constant.Constants;
 import com.intimetec.newsaggregation.dto.Keywords;
 import com.intimetec.newsaggregation.dto.NewsIds;
-import com.intimetec.newsaggregation.dto.request.SearchNewsRequest;
 import com.intimetec.newsaggregation.dto.request.ReportNewsArticleRequest;
+import com.intimetec.newsaggregation.dto.request.SearchNewsRequest;
 import com.intimetec.newsaggregation.dto.request.ViewHeadlinesRequest;
 import com.intimetec.newsaggregation.dto.response.ApiSuccessResponse;
 import com.intimetec.newsaggregation.entity.User;
@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -31,36 +32,34 @@ public class NewsController {
     private final ReportNewsService reportNewsService;
 
     @GetMapping(path = "/headlines")
-    public ResponseEntity<ApiSuccessResponse> viewHeadlines(@ModelAttribute ViewHeadlinesRequest viewHeadlinesRequest) {
-        return ApiSuccessResponse.builder()
-                .success(Constants.SUCCESS_TRUE)
-                .data(newsService.getHeadlines(viewHeadlinesRequest))
-                .message(HttpStatus.OK.getReasonPhrase())
-                .httpStatus(HttpStatus.OK)
-                .build();
+    public ResponseEntity<ApiSuccessResponse> viewHeadlines(
+            @CurrentUser User currentUser,
+            @ModelAttribute ViewHeadlinesRequest viewHeadlinesRequest
+    ) {
+        return HttpUtil.sendResponseWithData(
+                newsService.getHeadlines(currentUser, viewHeadlinesRequest),
+                HttpStatus.OK
+        );
     }
 
     @GetMapping(path = "/headlines/today")
-    public ResponseEntity<ApiSuccessResponse> viewTodayHeadlines() {
-        return ApiSuccessResponse.builder()
-                .success(Constants.SUCCESS_TRUE)
-                .data(newsService.getTodayHeadline())
-                .message(HttpStatus.OK.getReasonPhrase())
-                .httpStatus(HttpStatus.OK)
-                .build();
+    public ResponseEntity<ApiSuccessResponse> viewTodayHeadlines(@CurrentUser User currentUser) {
+        return HttpUtil.sendResponseWithData(
+                newsService.getTodayHeadline(currentUser),
+                HttpStatus.OK
+        );
     }
 
     @GetMapping(path = "/{categoryName}/headlines")
     public ResponseEntity<ApiSuccessResponse> viewHeadlinesUnderCategory(
+            @CurrentUser User currentUser,
             @PathVariable String categoryName,
             @ModelAttribute ViewHeadlinesRequest viewHeadlinesRequest
     ) {
-        return ApiSuccessResponse.builder()
-                .success(Constants.SUCCESS_TRUE)
-                .data(newsService.getHeadlinesUnderCategory(categoryName, viewHeadlinesRequest))
-                .message(HttpStatus.OK.getReasonPhrase())
-                .httpStatus(HttpStatus.OK)
-                .build();
+        return HttpUtil.sendResponseWithData(
+                newsService.getHeadlinesUnderCategory(currentUser, categoryName, viewHeadlinesRequest),
+                HttpStatus.OK
+        );
     }
 
     @PostMapping(path = "/{newsId}/toggle-like")
@@ -69,11 +68,7 @@ public class NewsController {
             @CurrentUser User currentUser
     ) {
         newsService.toggleLikeStatus(newsId, currentUser);
-        return ApiSuccessResponse.builder()
-                .success(Constants.SUCCESS_TRUE)
-                .message(HttpStatus.CREATED.getReasonPhrase())
-                .httpStatus(HttpStatus.CREATED)
-                .build();
+        return HttpUtil.sendResponseWithNoData(HttpStatus.CREATED);
     }
 
     @PostMapping(
@@ -81,12 +76,10 @@ public class NewsController {
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<ApiSuccessResponse> searchNews(@RequestBody SearchNewsRequest searchNewsRequest) {
-        return ApiSuccessResponse.builder()
-                .data(newsService.searchNews(searchNewsRequest))
-                .success(Constants.SUCCESS_TRUE)
-                .message(HttpStatus.OK.getReasonPhrase())
-                .httpStatus(HttpStatus.OK)
-                .build();
+        return HttpUtil.sendResponseWithData(
+                newsService.searchNews(searchNewsRequest),
+                HttpStatus.OK
+        );
     }
 
     @PostMapping(path = "/{newsId}/save")
@@ -95,7 +88,7 @@ public class NewsController {
             @CurrentUser User currentUser
     ) {
         newsService.saveNews(newsId, currentUser);
-        return HttpUtil.noBodyOkResponse();
+        return HttpUtil.sendResponseWithNoData(HttpStatus.OK);
     }
 
     @DeleteMapping(path = "/{newsId}/unsave")
@@ -104,7 +97,7 @@ public class NewsController {
             @CurrentUser User currentUser
     ) {
         newsService.unSaveNews(newsId, currentUser);
-        return HttpUtil.noBodyOkResponse();
+        return HttpUtil.sendResponseWithNoData(HttpStatus.OK);
     }
 
     @PostMapping(
@@ -117,77 +110,67 @@ public class NewsController {
             @CurrentUser User reportedBy
     ) {
         reportNewsService.reportNews(newsId, reportNewsArticleRequest, reportedBy);
-        return HttpUtil.noBodyOkResponse();
+        return HttpUtil.sendResponseWithNoData(HttpStatus.OK);
     }
 
     @GetMapping(path = "/reported")
+    @Secured(value = Constants.SPRING_ROLE_ADMIN)
     public ResponseEntity<ApiSuccessResponse> viewAllReportedNews() {
-        return ApiSuccessResponse.builder()
-                .success(Constants.SUCCESS_TRUE)
-                .data(reportNewsService.getAllReportedNews())
-                .message(HttpStatus.OK.getReasonPhrase())
-                .httpStatus(HttpStatus.OK)
-                .build();
+        return HttpUtil.sendResponseWithData(
+                reportNewsService.getAllReportedNews(),
+                HttpStatus.OK
+        );
     }
 
     @PutMapping(
             path = "/hide",
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
+    @Secured(value = Constants.SPRING_ROLE_ADMIN)
     public ResponseEntity<ApiSuccessResponse> hideNewsArticle(@RequestBody NewsIds newsIds) {
         reportNewsService.hideNews(newsIds);
-        return HttpUtil.noBodyOkResponse();
+        return HttpUtil.sendResponseWithNoData(HttpStatus.OK);
     }
 
     @PutMapping(
             path = "/unhide",
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
+    @Secured(value = Constants.SPRING_ROLE_ADMIN)
     public ResponseEntity<ApiSuccessResponse> unHideNewsArticle(@RequestBody NewsIds newsIds) {
         reportNewsService.unHideNews(newsIds);
-        return HttpUtil.noBodyOkResponse();
+        return HttpUtil.sendResponseWithNoData(HttpStatus.OK);
     }
 
     @PutMapping(
             path = "/hide/keywords",
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
+    @Secured(value = Constants.SPRING_ROLE_ADMIN)
     public ResponseEntity<ApiSuccessResponse> hideByKeywords(@RequestBody Keywords keywords) {
         reportNewsService.hideByKeywords(keywords);
-        return HttpUtil.noBodyOkResponse();
+        return HttpUtil.sendResponseWithNoData(HttpStatus.OK);
     }
 
     @GetMapping(path = "/hidden")
+    @Secured(value = Constants.SPRING_ROLE_ADMIN)
     public ResponseEntity<ApiSuccessResponse> viewAllHiddenNews() {
-        return ApiSuccessResponse.builder()
-                .success(Constants.SUCCESS_TRUE)
-                .data(newsService.getHiddenNews())
-                .message(HttpStatus.OK.getReasonPhrase())
-                .httpStatus(HttpStatus.OK)
-                .build();
+        return HttpUtil.sendResponseWithData(
+                newsService.getHiddenNews(),
+                HttpStatus.OK
+        );
     }
 
     @PostMapping(
             path = "/keywords",
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
+    @Secured(value = Constants.SPRING_ROLE_ADMIN)
     public ResponseEntity<ApiSuccessResponse> viewNewsWithKeywords(@RequestBody Keywords keywords) {
-        return ApiSuccessResponse.builder()
-                .success(Constants.SUCCESS_TRUE)
-                .data(newsService.getNewsWithKeywords(keywords))
-                .message(HttpStatus.OK.getReasonPhrase())
-                .httpStatus(HttpStatus.OK)
-                .build();
-    }
-
-    @GetMapping(path = "/liked")
-    public ResponseEntity<ApiSuccessResponse> viewAllNewsWithUserLikedStatus(@CurrentUser User user) {
-        return ApiSuccessResponse.builder()
-                .success(Constants.SUCCESS_TRUE)
-                .data(newsService.getAllNewsWithUserLikedStatus(user))
-                .message(HttpStatus.OK.getReasonPhrase())
-                .httpStatus(HttpStatus.OK)
-                .build();
+        return HttpUtil.sendResponseWithData(
+                newsService.getNewsWithKeywords(keywords),
+                HttpStatus.OK
+        );
     }
 
     @GetMapping(path = "/{newsId}")
@@ -195,12 +178,10 @@ public class NewsController {
             @PathVariable Long newsId,
             @CurrentUser User user
     ) {
-        return ApiSuccessResponse.builder()
-                .success(Constants.SUCCESS_TRUE)
-                .data(newsService.getNewsById(newsId, user))
-                .message(HttpStatus.OK.getReasonPhrase())
-                .httpStatus(HttpStatus.OK)
-                .build();
+        return HttpUtil.sendResponseWithData(
+                newsService.getNewsById(newsId, user),
+                HttpStatus.OK
+        );
     }
 
 }

@@ -20,7 +20,7 @@ public class DashboardServiceImpl implements DashboardService {
     @Override
     @Transactional(readOnly = true)
     public List<SavedNewsResponse> getAllNewsSavedByUser(User user) {
-        return NewsMapper.mapToSavedNewsResponse(savedArticleRepository.findAllBySavedBy(user.getId()));
+        return NewsMapper.mapToSavedNewsResponse(savedArticleRepository.findAllBySavedById(user.getId()));
     }
 
 }

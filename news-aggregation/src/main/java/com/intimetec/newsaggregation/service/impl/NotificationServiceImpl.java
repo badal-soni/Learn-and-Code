@@ -1,5 +1,6 @@
 package com.intimetec.newsaggregation.service.impl;
 
+import com.intimetec.newsaggregation.constant.Messages;
 import com.intimetec.newsaggregation.dto.response.NotificationResponse;
 import com.intimetec.newsaggregation.entity.Notification;
 import com.intimetec.newsaggregation.entity.User;
@@ -42,7 +43,7 @@ public class NotificationServiceImpl implements NotificationService {
     public NotificationResponse getNotificationById(Long notificationId, User user) {
         final Notification notification = notificationRepository
                 .findByIdAndReceiver(notificationId, user)
-                .orElseThrow(() -> new BadRequestException("Notification with id: " + notificationId + " does not exists"));
+                .orElseThrow(() -> new BadRequestException(Messages.NOTIFICATION_NOT_FOUND));
         notificationRepository.updateReadStatus(List.of(notificationId), true);
         NotificationResponse notificationResponse = new NotificationResponse();
         notificationResponse.setNotificationId(notificationId);

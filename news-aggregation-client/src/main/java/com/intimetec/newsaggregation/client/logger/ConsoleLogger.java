@@ -1,4 +1,4 @@
-package com.intimetec.newsaggregation.client.util;
+package com.intimetec.newsaggregation.client.logger;
 
 public class ConsoleLogger {
 

@@ -17,7 +17,8 @@ public class MenuChoices {
             "10. Unhide category\n",
             "11. View hidden news\n",
             "12. View hidden news categories\n",
-            "13. Logout\n"
+            "13. Hide news by keyword\n",
+            "14. Logout\n"
     );
 
     public static final List<String> WELCOME_MENU_CHOICES = List.of(
@@ -28,7 +29,7 @@ public class MenuChoices {
     );
 
     public static final List<String> USER_MENU_CHOICES = List.of(
-            "1. Headlines\n", // this will also have the report news feature
+            "1. Headlines\n",
             "2. Saved Articles\n",
             "3. Search\n",
             "4. Notifications\n",
@@ -45,8 +46,7 @@ public class MenuChoices {
     public static final List<String> SAVED_ARTICLES_MENU = List.of(
             "1. Unsave Article",
             "2. Back",
-            "3. Logout",
-            "4. Back"
+            "3. Logout"
     );
 
     public static final List<String> SEARCH_NEWS_MENU = List.of(

@@ -10,11 +10,6 @@ public class ViewExternalServerResponse {
     private String lastAccessedDate;
     private String apiKey;
 
-    public String viewExternalServerDetail() {
-        String activeStatusString = activeStatus ? "Active" : "Not Active";
-        return serverName + " - " + activeStatusString + " - " + "last accessed: " + lastAccessedDate;
-    }
-
     public String viewApiKey() {
         return serverName + " - " + apiKey;
     }

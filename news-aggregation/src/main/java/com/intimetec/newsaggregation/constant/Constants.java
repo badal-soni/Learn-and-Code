@@ -10,7 +10,8 @@ public final class Constants {
     public static final boolean SUCCESS_TRUE = true;
     public static final boolean SUCCESS_FALSE = false;
     public static final String LOWERCASE_REGULAR_EXPRESSION = "^[a-z]+$";
-    public static final char API_KEY_SEPARATOR = '&';
+    public static final String FULL_ACCESS_PERMISSION = "FullAccess";
+    public static final String READ_ONLY_PERMISSION = "ReadAccess";
 
     private Constants() {
     }

@@ -49,7 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
             if (Objects.isNull(authHeader) || !authHeader.startsWith(BEARER)) {
-                System.out.println("returning");
+                log.info("returning");
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -59,7 +59,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             final String username = jwtUtility.verifyToken(token);
             if (Objects.nonNull(username) && Objects.isNull(SecurityContextHolder.getContext().getAuthentication())) {
                 UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
-                System.out.println(userDetails.getAuthorities());
+                log.info(userDetails.getAuthorities().toString());
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,

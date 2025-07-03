@@ -15,7 +15,7 @@ public interface KeywordsRepository extends JpaRepository<Keyword, Long> {
     boolean existsByKeywordAndUserIdAndCategoryName(String keyword, Long userId, String categoryName);
 
     @Query("SELECT k FROM Keyword k JOIN k.users u WHERE k.id = :keywordId AND u.id = :userId")
-    Optional<Keyword> findByIdAndUserId(Long keywordId, Long id);
+    Optional<Keyword> findByIdAndUserId(Long keywordId, Long userId);
 
     @Query(value = "SELECT k FROM Keyword k JOIN FETCH k.users u JOIN FETCH k.parentCategory c WHERE u.id = :userId AND c.categoryName = :categoryName")
     List<Keyword> findAllByUserAndNewsCategory(Long userId, String categoryName);

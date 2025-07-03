@@ -1,11 +1,11 @@
 package com.intimetec.newsaggregation.controller;
 
 import com.intimetec.newsaggregation.constant.ApiVersions;
-import com.intimetec.newsaggregation.constant.Constants;
 import com.intimetec.newsaggregation.dto.request.SignInRequest;
 import com.intimetec.newsaggregation.dto.request.SignUpRequest;
 import com.intimetec.newsaggregation.dto.response.ApiSuccessResponse;
 import com.intimetec.newsaggregation.service.AuthService;
+import com.intimetec.newsaggregation.util.HttpUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,12 +30,10 @@ public class AuthController {
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<ApiSuccessResponse> signUp(@RequestBody SignUpRequest signUpRequest) {
-        return ApiSuccessResponse.builder()
-                .success(Constants.SUCCESS_TRUE)
-                .message(HttpStatus.CREATED.getReasonPhrase())
-                .data(authService.signUpUser(signUpRequest))
-                .httpStatus(HttpStatus.CREATED)
-                .build();
+        return HttpUtil.sendResponseWithData(
+                authService.signUpUser(signUpRequest),
+                HttpStatus.CREATED
+        );
     }
 
     @PostMapping(
@@ -43,12 +41,10 @@ public class AuthController {
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<ApiSuccessResponse> signIn(@RequestBody SignInRequest signInRequest) {
-        return ApiSuccessResponse.builder()
-                .success(Constants.SUCCESS_TRUE)
-                .message(HttpStatus.OK.getReasonPhrase())
-                .data(authService.signInUser(signInRequest))
-                .httpStatus(HttpStatus.OK)
-                .build();
+        return HttpUtil.sendResponseWithData(
+                authService.signInUser(signInRequest),
+                HttpStatus.OK
+        );
     }
 
 }

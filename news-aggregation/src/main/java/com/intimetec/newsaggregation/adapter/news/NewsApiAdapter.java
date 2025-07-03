@@ -1,12 +1,11 @@
 package com.intimetec.newsaggregation.adapter.news;
 
 import com.intimetec.newsaggregation.classifier.NewsCategoryClassifier;
+import com.intimetec.newsaggregation.configuration.NewsApiResponseAttributes;
 import com.intimetec.newsaggregation.constant.PredefinedCategories;
 import com.intimetec.newsaggregation.entity.News;
 import com.intimetec.newsaggregation.entity.NewsCategory;
-import com.intimetec.newsaggregation.repository.ExternalServerDetailsRepository;
-import com.intimetec.newsaggregation.repository.NewsCategoryRepository;
-import com.intimetec.newsaggregation.repository.NewsRepository;
+import com.intimetec.newsaggregation.repository.*;
 import com.intimetec.newsaggregation.util.ApiClient;
 import com.intimetec.newsaggregation.util.CommonUtility;
 import lombok.extern.slf4j.Slf4j;
@@ -34,9 +33,10 @@ public class NewsApiAdapter extends BaseNewsAdapter implements NewsFetcher {
             final NewsCategoryRepository newsCategoryRepository,
             final ExternalServerDetailsRepository externalServerDetailsRepository,
             final ApiClient apiClient,
-            final NewsCategoryClassifier newsCategoryClassifier
+            final NewsCategoryClassifier newsCategoryClassifier,
+            final BlockedKeywordRepository blockedKeywordRepository
     ) {
-        super(externalServerDetailsRepository, newsCategoryRepository, apiClient);
+        super(externalServerDetailsRepository, newsCategoryRepository, blockedKeywordRepository, apiClient);
         this.newsRepository = newsRepository;
         this.newsCategoryRepository = newsCategoryRepository;
         this.newsCategoryClassifier = newsCategoryClassifier;
@@ -65,7 +65,7 @@ public class NewsApiAdapter extends BaseNewsAdapter implements NewsFetcher {
     @Override
     protected List<News> parseNewsFromJsonResponse(String responseBody) {
         JSONObject json = new JSONObject(responseBody);
-        JSONArray newsArticleJsonResponse = json.getJSONArray("articles");
+        JSONArray newsArticleJsonResponse = json.getJSONArray(NewsApiResponseAttributes.ARTICLES);
 
         List<News> newsArticles = new ArrayList<>();
         for (int i = 0; i < newsArticleJsonResponse.length(); i++) {
@@ -74,22 +74,27 @@ public class NewsApiAdapter extends BaseNewsAdapter implements NewsFetcher {
             final NewsCategory newsCategory = getFromCache(assignedCategory);
 
             News newsEntity = News.builder()
-                    .headline(news.optString("title", "Untitled"))
-                    .description(news.optString("content", ""))
-                    .url(news.optString("url", ""))
-                    .source(news.optJSONObject("source").optString("name", "Unknown"))
-                    .publishedAt(CommonUtility.convertToLocalDate(news.optString("publishedAt", "")))
+                    .headline(news.optString(NewsApiResponseAttributes.TITLE, NewsApiResponseAttributes.NOT_ANY))
+                    .description(news.optString(NewsApiResponseAttributes.CONTENT, NewsApiResponseAttributes.NOT_ANY))
+                    .url(news.optString(NewsApiResponseAttributes.URL, NewsApiResponseAttributes.NOT_ANY))
+                    .source(news.optJSONObject(NewsApiResponseAttributes.SOURCE).optString(NewsApiResponseAttributes.SOURCE_NAME, NewsApiResponseAttributes.NOT_ANY))
+                    .publishedAt(CommonUtility.convertToLocalDate(news.optString(NewsApiResponseAttributes.PUBLISHED_AT, NewsApiResponseAttributes.EMPTY_DATE)))
                     .categories(List.of(newsCategory))
-                    .isHidden(false)
                     .build();
+            final boolean shouldHide = super.shouldNewsBeHidden(
+                    newsEntity.getHeadline(),
+                    newsEntity.getDescription(),
+                    List.of(assignedCategory)
+            );
+            newsEntity.setIsHidden(shouldHide);
             newsArticles.add(newsEntity);
         }
         return newsArticles;
     }
 
     private String assignCategory(JSONObject jsonObject) {
-        final String headline = jsonObject.getString("headline");
-        final String description = jsonObject.getString("description");
+        final String headline = jsonObject.optString(NewsApiResponseAttributes.TITLE, NewsApiResponseAttributes.NOT_ANY);
+        final String description = jsonObject.optString(NewsApiResponseAttributes.CONTENT, NewsApiResponseAttributes.NOT_ANY);
         if (Objects.isNull(headline) && Objects.isNull(description)) {
             return PredefinedCategories.GENERAL;
         }

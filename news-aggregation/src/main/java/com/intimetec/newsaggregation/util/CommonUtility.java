@@ -1,8 +1,5 @@
 package com.intimetec.newsaggregation.util;
 
-import com.intimetec.newsaggregation.entity.News;
-
-import java.lang.reflect.Field;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -29,29 +26,6 @@ public final class CommonUtility {
             }
         }
         return pattern.toString();
-    }
-
-    public static boolean isRelationalField(String fieldName) {
-        try {
-            final Field field = News.class.getDeclaredField(fieldName);
-            final Class<?> fieldType = field.getType();
-            return !fieldType.isPrimitive() && !isWrapper(fieldType) && !fieldType.isAssignableFrom(String.class);
-        } catch (NoSuchFieldException exception) {
-            return false;
-        }
-    }
-
-    public static boolean isEntityField(String fieldName) {
-        try {
-            News.class.getDeclaredField(fieldName);
-            return true;
-        } catch (NoSuchFieldException exception) {
-            return false;
-        }
-    }
-
-    private static boolean isWrapper(Class<?> field) {
-        return field.isAssignableFrom(Integer.class) || field.isAssignableFrom(Double.class) || field.isAssignableFrom(Long.class) || field.isAssignableFrom(Float.class);
     }
 
 }

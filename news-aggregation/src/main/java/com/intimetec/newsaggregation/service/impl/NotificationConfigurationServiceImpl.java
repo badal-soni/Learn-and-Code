@@ -4,7 +4,7 @@ import com.intimetec.newsaggregation.dto.event.UserRegisteredEvent;
 import com.intimetec.newsaggregation.dto.request.UpdateNotificationPreferencesRequest;
 import com.intimetec.newsaggregation.dto.response.AllNotificationConfigurations;
 import com.intimetec.newsaggregation.dto.response.KeywordResponse;
-import com.intimetec.newsaggregation.dto.response.NewsConfigurationResponse;
+import com.intimetec.newsaggregation.dto.response.NotificationConfigurationResponse;
 import com.intimetec.newsaggregation.entity.NewsCategory;
 import com.intimetec.newsaggregation.entity.NotificationConfiguration;
 import com.intimetec.newsaggregation.entity.User;
@@ -74,7 +74,7 @@ public class NotificationConfigurationServiceImpl implements NotificationConfigu
             NotificationConfiguration notificationConfiguration = new NotificationConfiguration();
             notificationConfiguration.setUser(user.get());
             notificationConfiguration.setNewsCategory(newsCategory);
-            notificationConfiguration.setEnabled(false); // Default to disabled
+            notificationConfiguration.setEnabled(false);
             notificationConfigurationRepository.saveAndFlush(notificationConfiguration);
         });
     }
@@ -96,10 +96,15 @@ public class NotificationConfigurationServiceImpl implements NotificationConfigu
                 .stream()
                 .collect(Collectors.toMap(
                         config -> config.getNewsCategory().getCategoryName(),
-                        config -> config
+                        config -> config,
+                        (existing, replacement) -> {
+                            return existing.getUpdatedAt().isAfter(replacement.getUpdatedAt())
+                                    ? existing
+                                    : replacement;
+                        }
                 ));
 
-        List<NewsConfigurationResponse> newsConfigurationResponses = allNewsCategories.stream()
+        List<NotificationConfigurationResponse> notificationConfigurationRespons = allNewsCategories.stream()
                 .map(category -> {
                     NotificationConfiguration existingConfig = existingConfigurationsMap.get(category.getCategoryName());
                     boolean categoryEnabled = existingConfig != null && existingConfig.isEnabled();
@@ -117,7 +122,7 @@ public class NotificationConfigurationServiceImpl implements NotificationConfigu
                             })
                             .collect(Collectors.toList());
 
-                    NewsConfigurationResponse categoryResponse = new NewsConfigurationResponse();
+                    NotificationConfigurationResponse categoryResponse = new NotificationConfigurationResponse();
                     categoryResponse.setCategoryName(category.getCategoryName());
                     categoryResponse.setEnabled(categoryEnabled);
                     categoryResponse.setKeywords(keywordResponses);
@@ -127,7 +132,7 @@ public class NotificationConfigurationServiceImpl implements NotificationConfigu
 
         AllNotificationConfigurations allConfigs = new AllNotificationConfigurations();
         allConfigs.setUserId(userId);
-        allConfigs.setNewsCategories(newsConfigurationResponses);
+        allConfigs.setNewsCategories(notificationConfigurationRespons);
         return allConfigs;
     }
 

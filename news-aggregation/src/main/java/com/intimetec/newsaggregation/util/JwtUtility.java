@@ -4,12 +4,14 @@ import com.intimetec.newsaggregation.exception.TokenException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
 
 @Component
+@Slf4j
 public final class JwtUtility {
 
     @Value("${JWT_SECRET_KEY}")
@@ -24,7 +26,7 @@ public final class JwtUtility {
                     .setExpiration(new Date(System.currentTimeMillis() + 10L * 24 * 60 * 60 * 1000))
                     .compact();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            log.error(e.getMessage());
             return null;
         }
     }

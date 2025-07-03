@@ -1,12 +1,14 @@
 package com.intimetec.newsaggregation.client.view;
 
 import com.intimetec.newsaggregation.client.constant.Constants;
+import com.intimetec.newsaggregation.client.constant.Messages;
 import com.intimetec.newsaggregation.client.constant.MenuChoices;
 import com.intimetec.newsaggregation.client.context.UserContextHolder;
 import com.intimetec.newsaggregation.client.dto.response.NewsResponse;
 import com.intimetec.newsaggregation.client.service.NewsCategoryService;
 import com.intimetec.newsaggregation.client.service.NewsService;
-import com.intimetec.newsaggregation.client.util.ConsoleLogger;
+import com.intimetec.newsaggregation.client.logger.ConsoleLogger;
+import com.intimetec.newsaggregation.client.displayer.NewsDisplayer;
 import com.intimetec.newsaggregation.dto.request.ReportNewsArticleRequest;
 import com.intimetec.newsaggregation.dto.response.NewsCategoryResponse;
 
@@ -20,8 +22,6 @@ public class HeadlineMenu implements MenuPresenter {
     private final ConsoleLogger consoleLogger;
     private final Scanner inputReader;
 
-    private boolean isLoggedIn = false;
-
     public HeadlineMenu() {
         this.newsService = new NewsService();
         this.newsCategoryService = new NewsCategoryService();
@@ -31,9 +31,8 @@ public class HeadlineMenu implements MenuPresenter {
 
     @Override
     public void showMenu() {
-        this.isLoggedIn = true;
         while (UserContextHolder.isLoggedIn) {
-            if (renderHeadlineView()) {
+            if (this.renderHeadlineView()) {
                 return;
             }
         }
@@ -56,34 +55,32 @@ public class HeadlineMenu implements MenuPresenter {
 
     private void viewTodaysHeadline() {
         List<NewsResponse> todaysNews = this.newsService.viewTodaysNews();
-        todaysNews.forEach(newsResponse -> {
-            consoleLogger.info(newsResponse.toString());
-        });
+        NewsDisplayer.displayNews(todaysNews);
         this.viewNewsById();
         this.reportNews();
         this.likeNews();
     }
 
     private void viewHeadlinedInDateRange() {
-        consoleLogger.info("Enter start date (yyyy-MM-dd): ");
+        consoleLogger.info(Messages.ENTER_START_DATE);
         String startDate = inputReader.next();
 
-        consoleLogger.info("Enter end date (yyyy-MM-dd): ");
+        consoleLogger.info(Messages.ENTER_END_DATE);
         String endDate = inputReader.next();
 
         Optional<NewsCategoryResponse> newsCategoryResponses = this.newsCategoryService.getAllCategories();
         Map<Integer, String> categoryMap = getCategoryChoice(newsCategoryResponses.get());
         categoryMap.forEach((categoryId, categoryName) -> consoleLogger.info(categoryId + ". " + categoryName));
 
-        consoleLogger.info("Enter the choice: ");
+        consoleLogger.info(Messages.ENTER_CHOICE);
         int categoryChoice = inputReader.nextInt();
 
-        List<NewsResponse> newsResponses = this.newsService.viewUnderCategoryBetweenDates(
+        List<NewsResponse> newsResponses = this.newsService.getAllNewsUnderCategoryBetweenDates(
                 categoryMap.get(categoryChoice),
                 LocalDate.parse(startDate),
                 LocalDate.parse(endDate)
         );
-        newsResponses.forEach(consoleLogger::info);
+        NewsDisplayer.displayNews(newsResponses);
         this.viewNewsById();
         this.reportNews();
         this.likeNews();
@@ -95,8 +92,6 @@ public class HeadlineMenu implements MenuPresenter {
         categoryMap.put(1, Constants.ALL_CATEGORIES);
 
         final List<NewsCategoryResponse.NewsCategoryDetail> newsCategoryDetails = newsCategoryResponse.getNewsCategoryDetails();
-        consoleLogger.info("Size: " + newsCategoryDetails.size());
-        newsCategoryDetails.forEach(consoleLogger::info);
         for (int i = 2; i < newsCategoryDetails.size(); i++) {
             categoryMap.put(i, newsCategoryDetails.get(i).categoryName());
         }
@@ -104,16 +99,16 @@ public class HeadlineMenu implements MenuPresenter {
     }
 
     private void reportNews() {
-        consoleLogger.info("Do you want to report a news (y/n) ?");
+        consoleLogger.info(Messages.REPORT_NEWS);
         char choice = inputReader.next().charAt(0);
         if (Character.toLowerCase(choice) != 'y') {
             return;
         }
         while (Character.toLowerCase(choice) == 'y') {
-            consoleLogger.info("Enter the news id to report: ");
+            consoleLogger.info(Messages.ENTER_NEWS_ID);
             Long newsId = inputReader.nextLong();
 
-            consoleLogger.info("Enter the report reason: ");
+            consoleLogger.info(Messages.ENTER_REPORT_REASON);
             String reportReason = inputReader.next();
 
             ReportNewsArticleRequest reportNewsArticleRequest = new ReportNewsArticleRequest();
@@ -121,54 +116,57 @@ public class HeadlineMenu implements MenuPresenter {
 
             this.newsService.reportNews(newsId, reportNewsArticleRequest);
 
-            consoleLogger.info("Do you want to report more (y/n) ?");
+            consoleLogger.info(Messages.ADD_MORE);
             choice = inputReader.next().charAt(0);
         }
     }
 
     private void likeNews() {
-        consoleLogger.info("Do you want to like a news (y/n) ?");
+        consoleLogger.info(Messages.LIKE_NEWS);
         char choice = inputReader.next().charAt(0);
         if (Character.toLowerCase(choice) != 'y') {
             return;
         }
         while (Character.toLowerCase(choice) == 'y') {
-            consoleLogger.info("Enter the news id to like: ");
-            Long newsId = inputReader.nextLong();
+            consoleLogger.info(Messages.ENTER_NEWS_CATEGORIES);
+            long newsId = inputReader.nextLong();
             this.newsService.toggleNewsLike(newsId);
 
-            consoleLogger.info("Do you want to like more (y/n) ?");
+            consoleLogger.info(Messages.ADD_MORE);
             choice = inputReader.next().charAt(0);
         }
     }
 
     public void saveNews() {
-        consoleLogger.info("Do you want to save a news (y/n) ?");
+        consoleLogger.info(Messages.SAVE_NEWS);
         char choice = inputReader.next().charAt(0);
         if (Character.toLowerCase(choice) != 'y') {
             return;
         }
         while (Character.toLowerCase(choice) == 'y') {
-            consoleLogger.info("Enter the news id to save: ");
+            consoleLogger.info(Messages.ENTER_NEWS_ID);
             Long newsId = inputReader.nextLong();
             this.newsService.saveNews(newsId);
 
-            consoleLogger.info("Do you want to save more (y/n) ?");
+            consoleLogger.info(Messages.ADD_MORE);
             choice = inputReader.next().charAt(0);
         }
     }
 
     private void viewNewsById() {
-        consoleLogger.info("Do you want to view a news by id (y/n) ?");
+        consoleLogger.info(Messages.VIEW_NEWS_BY_ID);
         char choice = inputReader.next().charAt(0);
         if (Character.toLowerCase(choice) != 'y') {
             return;
         }
         while (Character.toLowerCase(choice) == 'y') {
-            consoleLogger.info("Enter the news id: ");
+            consoleLogger.info(Messages.ENTER_NEWS_ID);
             Long newsId = inputReader.nextLong();
             var newsResponse = this.newsService.getNewsById(newsId);
-            newsResponse.ifPresent(consoleLogger::info);
+            newsResponse.ifPresent(NewsDisplayer::displaySingleNews);
+
+            consoleLogger.info(Messages.ADD_MORE);
+            choice = inputReader.next().charAt(0);
         }
     }
 

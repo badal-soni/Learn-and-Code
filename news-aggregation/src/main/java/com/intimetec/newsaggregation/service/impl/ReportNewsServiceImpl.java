@@ -1,5 +1,6 @@
 package com.intimetec.newsaggregation.service.impl;
 
+import com.intimetec.newsaggregation.constant.Messages;
 import com.intimetec.newsaggregation.dto.Keywords;
 import com.intimetec.newsaggregation.dto.NewsIds;
 import com.intimetec.newsaggregation.dto.event.NewsReportedEvent;
@@ -36,12 +37,12 @@ public class ReportNewsServiceImpl implements ReportNewsService {
 
     @Override
     public void reportNews(Long newsId, ReportNewsArticleRequest reportNewsArticleRequest, User reportedBy) {
-        if (reportedNewsRepository.existsByReportedNewsIdAndReportedBy(newsId, reportedBy)) {
-            throw new BadRequestException("You have already reported this news before");
+        if (reportedNewsRepository.existsByReportedNewsIdAndReportedByAndReportedNewsIsHiddenFalse(newsId, reportedBy)) {
+            throw new BadRequestException(Messages.NEWS_ALREADY_REPORTED);
         }
         final News news = newsRepository
                 .findById(newsId)
-                .orElseThrow(() -> new BadRequestException("News with id " + newsId + " does not exist"));
+                .orElseThrow(() -> new BadRequestException(String.format(Messages.NEWS_ID_NOT_FOUND, newsId)));
 
         ReportedNews reportedNews = new ReportedNews();
         reportedNews.setReportedBy(reportedBy);
@@ -76,7 +77,7 @@ public class ReportNewsServiceImpl implements ReportNewsService {
     @Override
     public void hideByKeywords(Keywords keywords) {
         final String regexpPattern = CommonUtility.buildRegularExpressionForKeywordMatching(keywords.getKeywords());
-        newsRepository.updateHiddenStatusByKeywords(true, regexpPattern);
+        newsRepository.setIsHiddenTrue(regexpPattern);
     }
 
     @Override

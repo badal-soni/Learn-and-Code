@@ -1,7 +1,9 @@
 package com.intimetec.newsaggregation.adapter.news;
 
+import com.intimetec.newsaggregation.configuration.NewsApiResponseAttributes;
 import com.intimetec.newsaggregation.entity.News;
 import com.intimetec.newsaggregation.entity.NewsCategory;
+import com.intimetec.newsaggregation.repository.BlockedKeywordRepository;
 import com.intimetec.newsaggregation.repository.ExternalServerDetailsRepository;
 import com.intimetec.newsaggregation.repository.NewsCategoryRepository;
 import com.intimetec.newsaggregation.repository.NewsRepository;
@@ -26,9 +28,10 @@ public class TheNewsApiAdapter extends BaseNewsAdapter implements NewsFetcher {
             final NewsRepository newsRepository,
             final NewsCategoryRepository newsCategoryRepository,
             final ExternalServerDetailsRepository externalServerDetailsRepository,
+            final BlockedKeywordRepository blockedKeywordRepository,
             final ApiClient apiClient
     ) {
-        super(externalServerDetailsRepository, newsCategoryRepository, apiClient);
+        super(externalServerDetailsRepository, newsCategoryRepository, blockedKeywordRepository, apiClient);
         this.newsRepository = newsRepository;
     }
 
@@ -55,28 +58,33 @@ public class TheNewsApiAdapter extends BaseNewsAdapter implements NewsFetcher {
     @Override
     protected List<News> parseNewsFromJsonResponse(String responseBody) {
         JSONObject jsonResponse = new JSONObject(responseBody);
-        JSONObject newsData = jsonResponse.getJSONObject("data");
-        JSONArray newsArray = newsData.getJSONArray("general");
+        JSONObject newsData = jsonResponse.getJSONObject(NewsApiResponseAttributes.DATA);
+        JSONArray newsArray = newsData.getJSONArray(NewsApiResponseAttributes.GENERAL);
 
         List<News> newsArticles = new ArrayList<>();
         final Map<String, NewsCategory> categoryNameToCategoryEntityMap = findOrElseCreateCategories(newsArray);
         for (int i = 0; i < newsArray.length(); i++) {
             JSONObject news = newsArray.getJSONObject(i);
-            JSONArray categories = news.getJSONArray("categories");
+            JSONArray categories = news.getJSONArray(NewsApiResponseAttributes.CATEGORIES);
             List<NewsCategory> newsCategories = new ArrayList<>();
             for (int j = 0; j < categories.length(); j++) {
                 final String category = categories.getString(j);
                 newsCategories.add(categoryNameToCategoryEntityMap.get(category));
             }
             News newsEntity = News.builder()
-                    .headline(news.optString("title", "Untitled"))
-                    .description(news.optString("description", ""))
-                    .url(news.optString("url", ""))
-                    .source(news.optString("source", "Unknown"))
-                    .publishedAt(CommonUtility.convertToLocalDate(news.optString("publishedAt", "")))
+                    .headline(news.optString(NewsApiResponseAttributes.TITLE, NewsApiResponseAttributes.NOT_ANY))
+                    .description(news.optString(NewsApiResponseAttributes.DESCRIPTION, NewsApiResponseAttributes.NOT_ANY))
+                    .url(news.optString(NewsApiResponseAttributes.URL, NewsApiResponseAttributes.NOT_ANY))
+                    .source(news.optString(NewsApiResponseAttributes.SOURCE, NewsApiResponseAttributes.NOT_ANY))
+                    .publishedAt(CommonUtility.convertToLocalDate(news.optString(NewsApiResponseAttributes.PUBLISHED_AT, NewsApiResponseAttributes.EMPTY_DATE)))
                     .categories(newsCategories)
-                    .isHidden(false)
                     .build();
+            boolean shouldHide = super.shouldNewsBeHidden(
+                    newsEntity.getHeadline(),
+                    newsEntity.getDescription(),
+                    newsCategories.stream().map(NewsCategory::getCategoryName).toList()
+            );
+            newsEntity.setIsHidden(shouldHide);
             newsArticles.add(newsEntity);
         }
         return newsArticles;
@@ -85,7 +93,7 @@ public class TheNewsApiAdapter extends BaseNewsAdapter implements NewsFetcher {
     private Map<String, NewsCategory> findOrElseCreateCategories(JSONArray jsonArray) {
         final Set<String> categoriesSet = new HashSet<>();
         for (int index = 0; index < jsonArray.length(); index++) {
-            JSONArray categoriesArray = jsonArray.getJSONObject(index).getJSONArray("categories");
+            JSONArray categoriesArray = jsonArray.getJSONObject(index).getJSONArray(NewsApiResponseAttributes.CATEGORIES);
             for (int i = 0; i < categoriesArray.length(); i++) {
                 categoriesSet.add(categoriesArray.getString(i));
             }

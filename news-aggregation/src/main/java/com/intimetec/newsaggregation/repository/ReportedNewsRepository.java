@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ReportedNewsRepository extends JpaRepository<ReportedNews, Long> {
 
-    boolean existsByReportedNewsIdAndReportedBy(Long newsId, User reportedBy);
+    boolean existsByReportedNewsIdAndReportedByAndReportedNewsIsHiddenFalse(Long newsId, User reportedBy);
 
 }

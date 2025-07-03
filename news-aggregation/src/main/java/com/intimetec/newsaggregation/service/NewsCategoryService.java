@@ -17,4 +17,6 @@ public interface NewsCategoryService {
 
     NewsCategoryResponse getAllHiddenCategories();
 
+    NewsCategoryResponse getAllUnHiddenCategories();
+
 }

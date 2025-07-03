@@ -1,12 +1,15 @@
 package com.intimetec.newsaggregation.adapter.news;
 
 import com.intimetec.newsaggregation.constant.Messages;
+import com.intimetec.newsaggregation.entity.BlockedKeyword;
 import com.intimetec.newsaggregation.entity.ExternalServerDetail;
 import com.intimetec.newsaggregation.entity.News;
 import com.intimetec.newsaggregation.entity.NewsCategory;
+import com.intimetec.newsaggregation.repository.BlockedKeywordRepository;
 import com.intimetec.newsaggregation.repository.ExternalServerDetailsRepository;
 import com.intimetec.newsaggregation.repository.NewsCategoryRepository;
 import com.intimetec.newsaggregation.util.ApiClient;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
@@ -19,16 +22,70 @@ public abstract class BaseNewsAdapter {
 
     private final ExternalServerDetailsRepository externalServerDetailsRepository;
     private final NewsCategoryRepository newsCategoryRepository;
+    private final BlockedKeywordRepository blockedKeywordRepository;
     private final ApiClient apiClient;
 
     public BaseNewsAdapter(
             final ExternalServerDetailsRepository externalServerDetailsRepository,
             final NewsCategoryRepository newsCategoryRepository,
+            final BlockedKeywordRepository blockedKeywordRepository,
             final ApiClient apiClient
     ) {
         this.externalServerDetailsRepository = externalServerDetailsRepository;
         this.newsCategoryRepository = newsCategoryRepository;
+        this.blockedKeywordRepository = blockedKeywordRepository;
         this.apiClient = apiClient;
+    }
+
+    protected boolean shouldNewsBeHidden(
+            @NotNull String headline,
+            @NotNull String description,
+            List<String> newsCategories
+    ) {
+        final String fullText = headline + description;
+        final List<String> blockedKeywords = blockedKeywordRepository
+                .findAll()
+                .stream()
+                .map(BlockedKeyword::getBlockedKeyword)
+                .toList();
+        for (String blockedKeyword : blockedKeywords) {
+            if (fullText.contains(blockedKeyword)) {
+                return true;
+            }
+        }
+        boolean hasBlockedKeywords = doesNewsContainsBlockedKeywords(fullText);
+        boolean areCategoriesHidden = isNewsCategoryHidden(newsCategories);
+        return hasBlockedKeywords || areCategoriesHidden;
+    }
+
+    private boolean doesNewsContainsBlockedKeywords(String fullText) {
+        fullText = fullText.toLowerCase();
+        final List<String> blockedKeywords = blockedKeywordRepository
+                .findAll()
+                .stream()
+                .map(BlockedKeyword::getBlockedKeyword)
+                .toList();
+        for (String blockedKeyword: blockedKeywords) {
+            if (fullText.contains(blockedKeyword.toLowerCase())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isNewsCategoryHidden(List<String> newsCategories) {
+        Set<String> hiddenNewsCategories = newsCategoryRepository
+                .findAllByIsHiddenTrue()
+                .stream()
+                .map(newsCategory -> newsCategory.getCategoryName().toLowerCase())
+                .collect(Collectors.toSet());
+
+        for (String newsCategory: newsCategories) {
+            if (hiddenNewsCategories.contains(newsCategory.toLowerCase())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     protected void updateExternalServerDetail(
@@ -36,6 +93,7 @@ public abstract class BaseNewsAdapter {
             String response
     ) {
         if (Objects.isNull(response)) {
+            log.warn(Messages.EMPTY_RESPONSE_FROM_EXTERNAL_SERVER, externalServerDetail.getServerName());
             externalServerDetail.setActive(false);
             externalServerDetail.setLastFailedTime(LocalDateTime.now());
         } else {

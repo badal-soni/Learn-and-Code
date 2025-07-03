@@ -14,4 +14,10 @@ public interface KeywordService {
 
     List<KeywordResponse> getAllKeywordsOfUser(User user);
 
+    void addBlockedKeyword(String keyword);
+
+    List<String> getAllBlockedKeywords();
+
+    void deleteBlockedKeyword(String keyword);
+
 }

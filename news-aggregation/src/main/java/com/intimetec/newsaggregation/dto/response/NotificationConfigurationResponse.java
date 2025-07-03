@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class NewsConfigurationResponse {
+public class NotificationConfigurationResponse {
 
     private String categoryName;
     private boolean isEnabled;

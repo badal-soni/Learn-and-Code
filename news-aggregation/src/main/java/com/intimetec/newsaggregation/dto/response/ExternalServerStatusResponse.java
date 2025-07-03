@@ -11,6 +11,7 @@ public class ExternalServerStatusResponse {
 
     @NotEmpty
     private String serverName;
+    private Long serverId;
     private boolean activeStatus;
     private String apiKey;
     private LocalDate lastAccessedDate;

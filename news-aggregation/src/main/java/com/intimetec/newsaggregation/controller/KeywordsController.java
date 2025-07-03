@@ -7,10 +7,12 @@ import com.intimetec.newsaggregation.dto.request.CreateKeywordRequest;
 import com.intimetec.newsaggregation.dto.response.ApiSuccessResponse;
 import com.intimetec.newsaggregation.entity.User;
 import com.intimetec.newsaggregation.service.KeywordService;
+import com.intimetec.newsaggregation.util.HttpUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -29,11 +31,7 @@ public class KeywordsController {
             @CurrentUser User currentUser
     ) {
         keywordService.createKeyword(createKeywordRequest, currentUser);
-        return ApiSuccessResponse.builder()
-                .success(Constants.SUCCESS_TRUE)
-                .message(HttpStatus.CREATED.getReasonPhrase())
-                .httpStatus(HttpStatus.CREATED)
-                .build();
+        return HttpUtil.sendResponseWithNoData(HttpStatus.CREATED);
     }
 
     @PutMapping(path = "/{keywordId}/status/toggle")
@@ -42,21 +40,42 @@ public class KeywordsController {
             @CurrentUser User currentUser
     ) {
         keywordService.toggleKeywordActiveStatus(keywordId, currentUser);
-        return ApiSuccessResponse.builder()
-                .success(Constants.SUCCESS_TRUE)
-                .message(HttpStatus.CREATED.getReasonPhrase())
-                .httpStatus(HttpStatus.CREATED)
-                .build();
+        return HttpUtil.sendResponseWithNoData(HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<ApiSuccessResponse> viewAllKeywords(@CurrentUser User currentUser) {
-        return ApiSuccessResponse.builder()
-                .success(Constants.SUCCESS_TRUE)
-                .data(keywordService.getAllKeywordsOfUser(currentUser))
-                .message(HttpStatus.OK.getReasonPhrase())
-                .httpStatus(HttpStatus.OK)
-                .build();
+    public ResponseEntity<ApiSuccessResponse> getAllKeywordsOfUser(@CurrentUser User currentUser) {
+        return HttpUtil.sendResponseWithData(
+                keywordService.getAllKeywordsOfUser(currentUser),
+                HttpStatus.OK
+        );
+    }
+
+    @PostMapping(path = "/blocked/{keyword}")
+    @Secured(value = Constants.SPRING_ROLE_ADMIN)
+    public ResponseEntity<ApiSuccessResponse> addBlockedKeyword(
+            @PathVariable String keyword
+    ) {
+        keywordService.addBlockedKeyword(keyword);
+        return HttpUtil.sendResponseWithNoData(HttpStatus.CREATED);
+    }
+
+    @GetMapping(path = "/blocked")
+    @Secured(value = Constants.SPRING_ROLE_ADMIN)
+    public ResponseEntity<ApiSuccessResponse> getAllBlockedKeywords() {
+        return HttpUtil.sendResponseWithData(
+                keywordService.getAllBlockedKeywords(),
+                HttpStatus.OK
+        );
+    }
+
+    @DeleteMapping(path = "/blocked/{keyword}")
+    @Secured(value = Constants.SPRING_ROLE_ADMIN)
+    public ResponseEntity<ApiSuccessResponse> removeBlockedKeyword(
+            @PathVariable String keyword
+    ) {
+        keywordService.deleteBlockedKeyword(keyword);
+        return HttpUtil.sendResponseWithNoData(HttpStatus.OK);
     }
 
 }

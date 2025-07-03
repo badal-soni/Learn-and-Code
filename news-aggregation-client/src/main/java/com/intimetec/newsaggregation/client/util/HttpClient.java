@@ -1,214 +1,99 @@
 package com.intimetec.newsaggregation.client.util;
 
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.intimetec.newsaggregation.client.constant.HttpHeader;
+import com.intimetec.newsaggregation.client.constant.HttpMethod;
+import com.intimetec.newsaggregation.client.constant.MediaType;
 import com.intimetec.newsaggregation.client.dto.response.ApiResponse;
+import com.intimetec.newsaggregation.client.logger.ConsoleLogger;
+import com.intimetec.newsaggregation.client.logger.FileLogger;
+import com.intimetec.newsaggregation.dto.response.ApiErrorResponse;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class HttpClient {
 
     private final ObjectMapper objectMapper;
+    private final FileLogger fileLogger;
+    private final ConsoleLogger consoleLogger;
 
     public HttpClient() {
-        this.objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
+        this.objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        this.fileLogger = FileLogger.getInstance();
+        this.consoleLogger = new ConsoleLogger();
     }
 
     public <T> ApiResponse<T> get(String urlString, Map<String, String> headers, Class<T> responseType) throws Exception {
-        URL url = new URL(urlString);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-
-        if (headers != null) {
-            for (Map.Entry<String, String> header : headers.entrySet()) {
-                connection.setRequestProperty(header.getKey(), header.getValue());
-            }
-        }
-
-        int responseCode = connection.getResponseCode();
-        System.out.println("GET Response Code: " + responseCode);
-
-        if (responseCode == HttpURLConnection.HTTP_OK) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                StringBuilder responseJson = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    responseJson.append(line);
-                }
-                // Deserialize the JSON into an ApiResponse object
-                return objectMapper.readValue(responseJson.toString(),
-                        objectMapper.getTypeFactory().constructParametricType(ApiResponse.class, responseType));
-            }
-        } else {
-            throw new Exception("GET request failed with response code: " + responseCode);
-        }
+        return executeRequest(HttpMethod.GET, urlString, null, headers, responseType);
     }
 
     public <T> ApiResponse<List<T>> getList(String urlString, Map<String, String> headers, Class<T> responseType) throws Exception {
-        URL url = new URL(urlString);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-
-        if (headers != null) {
-            for (Map.Entry<String, String> header : headers.entrySet()) {
-                connection.setRequestProperty(header.getKey(), header.getValue());
-            }
-        }
-
-        int responseCode = connection.getResponseCode();
-        System.out.println("GET Response Code: " + responseCode);
-
-        if (responseCode == HttpURLConnection.HTTP_OK) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                StringBuilder responseJson = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    responseJson.append(line);
-                }
-                return objectMapper.readValue(
-                        responseJson.toString(),
-                        objectMapper.getTypeFactory().constructParametricType(ApiResponse.class, objectMapper.getTypeFactory().constructCollectionType(List.class, responseType))
-                );
-            }
-        } else {
-            throw new Exception("GET request failed with response code: " + responseCode);
-        }
+        JavaType listType = objectMapper.getTypeFactory().constructCollectionType(List.class, responseType);
+        return executeRequest(HttpMethod.GET, urlString, null, headers, listType);
     }
 
     public <T, R> ApiResponse<T> post(String urlString, R requestBody, Map<String, String> headers, Class<T> responseType) throws Exception {
-        URL url = new URL(urlString);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("POST");
-        connection.setDoOutput(true);
-
-        if (headers != null) {
-            for (Map.Entry<String, String> header : headers.entrySet()) {
-                connection.setRequestProperty(header.getKey(), header.getValue());
-            }
-        }
-        connection.setRequestProperty("Content-Type", "application/json");
-
-        if (requestBody != null) {
-            String jsonRequestBody = objectMapper.writeValueAsString(requestBody);
-            try (OutputStream os = connection.getOutputStream()) {
-                os.write(jsonRequestBody.getBytes());
-                os.flush();
-            }
-        }
-
-        int responseCode = connection.getResponseCode();
-        System.out.println("POST Response Code: " + responseCode);
-
-        if (responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_CREATED) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                StringBuilder responseJson = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    responseJson.append(line);
-                }
-                return objectMapper.readValue(responseJson.toString(),
-                        objectMapper.getTypeFactory().constructParametricType(ApiResponse.class, responseType));
-            }
-        } else {
-            throw new Exception("POST request failed with response code: " + responseCode);
-        }
+        return executeRequest(HttpMethod.POST, urlString, requestBody, headers, responseType);
     }
 
     public <T, R> ApiResponse<List<T>> postList(String urlString, R requestBody, Map<String, String> headers, Class<T> responseType) throws Exception {
-        URL url = new URL(urlString);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("POST");
-        connection.setDoOutput(true);
-
-        if (headers != null) {
-            for (Map.Entry<String, String> header : headers.entrySet()) {
-                connection.setRequestProperty(header.getKey(), header.getValue());
-            }
-        }
-        connection.setRequestProperty("Content-Type", "application/json");
-
-        if (requestBody != null) {
-            String jsonRequestBody = objectMapper.writeValueAsString(requestBody);
-            try (OutputStream os = connection.getOutputStream()) {
-                os.write(jsonRequestBody.getBytes());
-                os.flush();
-            }
-        }
-
-        int responseCode = connection.getResponseCode();
-        System.out.println("POST Response Code: " + responseCode);
-
-        if (responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_CREATED) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                StringBuilder responseJson = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    responseJson.append(line);
-                }
-                return objectMapper.readValue(responseJson.toString(),
-                        objectMapper.getTypeFactory().constructParametricType(ApiResponse.class, responseType));
-            }
-        } else {
-            throw new Exception("POST request failed with response code: " + responseCode);
-        }
+        JavaType listType = objectMapper.getTypeFactory().constructCollectionType(List.class, responseType);
+        return executeRequest(HttpMethod.POST, urlString, requestBody, headers, listType);
     }
 
     public <T, R> ApiResponse<T> put(String urlString, R requestBody, Map<String, String> headers, Class<T> responseType) throws Exception {
-        return executeRequest("PUT", urlString, requestBody, headers, responseType);
+        return executeRequest(HttpMethod.PUT, urlString, requestBody, headers, responseType);
     }
 
-    public ApiResponse<Void> delete(String urlString, Map<String, String> headers) throws Exception {
-        URL url = new URL(urlString);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("DELETE");
-
-        if (headers != null) {
-            for (Map.Entry<String, String> header : headers.entrySet()) {
-                connection.setRequestProperty(header.getKey(), header.getValue());
-            }
-        }
-
-        int responseCode = connection.getResponseCode();
-        System.out.println("DELETE Response Code: " + responseCode);
-
-        return processResponse(connection, Void.class);
+    public ApiResponse<Void> delete(String urlString, Map<String, String> headers, String requestBody) throws Exception {
+        return executeRequest(HttpMethod.DELETE, urlString, requestBody, headers, Void.class);
     }
 
     private <T, R> ApiResponse<T> executeRequest(String method, String urlString, R requestBody, Map<String, String> headers, Class<T> responseType) throws Exception {
-        URL url = new URL(urlString);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod(method);
-        connection.setDoOutput(true);
+        return executeRequest(method, urlString, requestBody, headers, (JavaType) objectMapper.getTypeFactory().constructType(responseType));
+    }
 
-        if (headers != null) {
-            for (Map.Entry<String, String> header : headers.entrySet()) {
-                connection.setRequestProperty(header.getKey(), header.getValue());
-            }
-        }
-        connection.setRequestProperty("Content-Type", "application/json");
+    private <T, R> ApiResponse<T> executeRequest(String method, String urlString, R requestBody, Map<String, String> headers, JavaType responseType) throws Exception {
+        HttpURLConnection connection = setupConnection(urlString, method, headers);
 
         if (requestBody != null) {
-            String jsonRequestBody = objectMapper.writeValueAsString(requestBody);
-            try (OutputStream os = connection.getOutputStream()) {
-                os.write(jsonRequestBody.getBytes());
-                os.flush();
-            }
+            writeRequestBody(connection, requestBody);
         }
 
         int responseCode = connection.getResponseCode();
-        System.out.println(method + " Response Code: " + responseCode);
-
+        fileLogger.info(HttpClient.class + ": URL: " + urlString + " response status: " + responseCode);
         return processResponse(connection, responseType);
     }
 
-    private <T> ApiResponse<T> processResponse(HttpURLConnection connection, Class<T> responseType) throws Exception {
+    private HttpURLConnection setupConnection(String urlString, String method, Map<String, String> headers) throws IOException {
+        URL url = new URL(urlString);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod(method);
+        connection.setDoOutput(!method.equals(HttpMethod.GET));
+        connection.setRequestProperty(HttpHeader.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+
+        if (Objects.nonNull(headers)) {
+            headers.forEach(connection::setRequestProperty);
+        }
+        return connection;
+    }
+
+    private <R> void writeRequestBody(HttpURLConnection connection, R requestBody) throws IOException {
+        String jsonRequestBody = objectMapper.writeValueAsString(requestBody);
+        try (OutputStream os = connection.getOutputStream()) {
+            os.write(jsonRequestBody.getBytes());
+            os.flush();
+        }
+    }
+
+    private <T> ApiResponse<T> processResponse(HttpURLConnection connection, JavaType responseType) throws Exception {
         int responseCode = connection.getResponseCode();
         String httpStatus = connection.getResponseMessage();
         boolean success = (responseCode >= 200 && responseCode < 300);
@@ -218,30 +103,35 @@ public class HttpClient {
         apiResponse.setSuccess(success);
 
         if (success) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                StringBuilder responseJson = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    responseJson.append(line);
-                }
-                if (!responseType.equals(Void.class)) {
-                    T data = objectMapper.readValue(responseJson.toString(), responseType);
-                    apiResponse.setData(data);
-                }
+            String responseJson = readInputStream(connection.getInputStream());
+            if (!responseType.getRawClass().equals(Void.class)) {
+                JavaType apiResponseType = objectMapper.getTypeFactory().constructParametricType(ApiResponse.class, responseType);
+                ApiResponse<T> fullResponse = objectMapper.readValue(responseJson, apiResponseType);
+                apiResponse.setData(fullResponse.getData());
             }
             apiResponse.setMessage("Request was successful");
         } else {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()))) {
-                StringBuilder errorJson = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    errorJson.append(line);
-                }
-                apiResponse.setMessage(errorJson.toString());
-            }
+            ApiErrorResponse errorResponse = objectMapper.readValue(readInputStream(connection.getErrorStream()), ApiErrorResponse.class);
+            consoleLogger.info(errorResponse.getMessage());
+            apiResponse.setMessage(errorResponse.getMessage());
         }
+
         return apiResponse;
     }
 
+    private String readInputStream(InputStream inputStream) throws IOException {
+        if (Objects.isNull(inputStream)) {
+            return "";
+        }
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+            return response.toString();
+        }
+    }
 }
 

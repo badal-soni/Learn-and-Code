@@ -1,8 +1,7 @@
 package com.intimetec.newsaggregation.notification.email;
 
-import com.intimetec.newsaggregation.constant.EmailConstants;
+import com.intimetec.newsaggregation.constant.Messages;
 import com.intimetec.newsaggregation.dto.EmailNotificationPayload;
-import com.intimetec.newsaggregation.dto.event.UserRegisteredEvent;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -11,12 +10,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Component
 @RequiredArgsConstructor
@@ -24,7 +22,7 @@ import java.util.concurrent.Executors;
 public class GmailNotificationService implements EmailNotificationService {
 
     private final JavaMailSender javaMailSender;
-    private final ExecutorService emailExecutorService = Executors.newSingleThreadExecutor();
+    private final ThreadPoolTaskExecutor asyncExecutor;
 
     @Value("${spring.mail.username}")
     private String senderEmailAddress;
@@ -33,9 +31,9 @@ public class GmailNotificationService implements EmailNotificationService {
     @Async("asyncExecutor")
     public void sendEmailNotification(EmailNotificationPayload emailNotificationPayload) {
         try {
-            System.out.println("Sending single email");
             MimeMessage mimeMessage = buildMessage(emailNotificationPayload);
-            emailExecutorService.execute(() -> javaMailSender.send(mimeMessage));
+            log.debug("Sending single email to: {}", emailNotificationPayload.getRecipientEmailAddress());
+            asyncExecutor.execute(() -> javaMailSender.send(mimeMessage));
         } catch (Exception exception) {
             throw new RuntimeException("Failed to send email notification", exception);
         }
@@ -49,8 +47,8 @@ public class GmailNotificationService implements EmailNotificationService {
         for (EmailNotificationPayload emailNotificationPayload : emailNotificationPayloads) {
             mimeMessages[index++] = buildMessage(emailNotificationPayload);
         }
-        System.out.println("Sending bulk email");
-        emailExecutorService.execute(() -> javaMailSender.send(mimeMessages));
+        log.debug("Sending bulk email");
+        asyncExecutor.execute(() -> javaMailSender.send(mimeMessages));
     }
 
     private MimeMessage buildMessage(EmailNotificationPayload emailNotificationPayload) {
@@ -65,18 +63,8 @@ public class GmailNotificationService implements EmailNotificationService {
             return mimeMessage;
         } catch (MessagingException exception) {
             log.error(exception.getMessage());
-            throw new RuntimeException("Something went wrong while generating the content to be sent");
+            throw new RuntimeException(Messages.SOMETHING_WENT_WRONG_EMAIL);
         }
-    }
-
-//    @EventListener
-    public void sendRegistrationEmail(UserRegisteredEvent userRegisteredEvent) {
-        EmailNotificationPayload welcomeEmailPayload = new EmailNotificationPayload();
-        welcomeEmailPayload.setSenderEmailAddress(senderEmailAddress);
-        welcomeEmailPayload.setRecipientEmailAddress(userRegisteredEvent.getEmail());
-        welcomeEmailPayload.setSubject(EmailConstants.WELCOME_EMAIL_SUBJECT);
-        welcomeEmailPayload.setBody(String.format(EmailConstants.WELCOME_EMAIL_CONTENT, userRegisteredEvent.getUsername()));
-        sendEmailNotification(welcomeEmailPayload);
     }
 
 }

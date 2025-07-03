@@ -1,20 +1,21 @@
 package com.intimetec.newsaggregation.client.view;
 
+import com.intimetec.newsaggregation.client.constant.Messages;
 import com.intimetec.newsaggregation.client.constant.MenuChoices;
 import com.intimetec.newsaggregation.client.context.UserContextHolder;
-import com.intimetec.newsaggregation.client.dto.response.NotificationResponse;
+import com.intimetec.newsaggregation.client.displayer.KeywordDisplayer;
+import com.intimetec.newsaggregation.client.displayer.NotificationConfigurationsDisplayer;
+import com.intimetec.newsaggregation.client.displayer.NotificationDisplayer;
+import com.intimetec.newsaggregation.client.logger.ConsoleLogger;
 import com.intimetec.newsaggregation.client.service.NotificationConfigurationService;
 import com.intimetec.newsaggregation.client.service.NotificationService;
-import com.intimetec.newsaggregation.client.util.ConsoleLogger;
 import com.intimetec.newsaggregation.dto.request.CreateKeywordRequest;
 import com.intimetec.newsaggregation.dto.request.UpdateNotificationPreferencesRequest;
 import com.intimetec.newsaggregation.dto.response.AllNotificationConfigurations;
 import com.intimetec.newsaggregation.dto.response.KeywordResponse;
-import com.intimetec.newsaggregation.dto.response.NewsConfigurationResponse;
+import com.intimetec.newsaggregation.dto.response.NotificationConfigurationResponse;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class NotificationMenuPresenter implements MenuPresenter {
 
@@ -22,7 +23,6 @@ public class NotificationMenuPresenter implements MenuPresenter {
     private final NotificationConfigurationService notificationConfigurationService;
     private final Scanner inputReader;
     private final ConsoleLogger consoleLogger;
-    private boolean isLoggedIn = false;
 
     public NotificationMenuPresenter() {
         this.notificationService = new NotificationService();
@@ -33,7 +33,6 @@ public class NotificationMenuPresenter implements MenuPresenter {
 
     @Override
     public void showMenu() {
-        this.isLoggedIn = true;
         while (UserContextHolder.isLoggedIn) {
             if (this.renderOptions()) {
                 return;
@@ -65,51 +64,75 @@ public class NotificationMenuPresenter implements MenuPresenter {
     }
 
     private void viewNotifications() {
-        List<NotificationResponse> notifications = this.notificationService.getAllNotifications();
-        notifications.forEach(notification -> {
-            consoleLogger.info("Content: " + notification.getContent());
-        });
+        var notifications = this.notificationService.getAllNotifications();
+        NotificationDisplayer.displayNotifications(notifications);
     }
 
     private void configureNotificationSettings() {
         AllNotificationConfigurations allNotificationConfigurations = this.notificationConfigurationService.getAllNotificationConfigurations();
-        consoleLogger.info(allNotificationConfigurations.toString());
+        NotificationConfigurationsDisplayer.displayConfigurations(allNotificationConfigurations);
 
-        List<UpdateNotificationPreferencesRequest.NotificationPreference> notificationPreferences = new ArrayList<>();
-        List<NewsConfigurationResponse> newsCategories = allNotificationConfigurations.getNewsCategories();
-        for (NewsConfigurationResponse newsCategory : newsCategories) {
-            consoleLogger.info("Enter 1 to enable, 2 to disable, 3 to skip");
-            int choice = inputReader.nextInt();
-            if (choice == 3) {
-                continue;
-            }
-            boolean shouldEnable = choice == 1;
-            notificationPreferences.add(
-                    new UpdateNotificationPreferencesRequest.NotificationPreference(
-                            newsCategory.getCategoryName(), shouldEnable)
-            );
+        List<NotificationConfigurationResponse> notificationConfigurations = allNotificationConfigurations.getNewsCategories();
+        final Map<Integer, NotificationConfigurationResponse> preferencesMap = buildPreferencesMap(notificationConfigurations);
+
+        preferencesMap.forEach((position, notificationConfigurationResponse) -> {
+            consoleLogger.info("Enter " + position + ". to toggle enable/disable status of " + notificationConfigurationResponse.getCategoryName() + ": Enabled: " + notificationConfigurationResponse.isEnabled());
+        });
+        consoleLogger.info("Enter " + (preferencesMap.size() + 1) + " to skip");
+
+        int option = inputReader.nextInt();
+        if (option < 1 || option > preferencesMap.size() + 1) {
+            consoleLogger.error(Messages.INVALID_OPTION);
+            return;
         }
+        if (option == preferencesMap.size() + 1) {
+            consoleLogger.info(Messages.SKIP_NOTIFICATION_PREFERENCES);
+            return;
+        }
+        UpdateNotificationPreferencesRequest.NotificationPreference notificationPreference = new UpdateNotificationPreferencesRequest.NotificationPreference(
+                preferencesMap.get(option).getCategoryName(),
+                !preferencesMap.get(option).isEnabled()
+        );
         UpdateNotificationPreferencesRequest updateNotificationPreferencesRequest = new UpdateNotificationPreferencesRequest();
-        updateNotificationPreferencesRequest.setPreferences(notificationPreferences);
+        updateNotificationPreferencesRequest.setPreferences(List.of(notificationPreference));
         this.notificationConfigurationService.updateNotificationPreferences(updateNotificationPreferencesRequest);
     }
 
+    private Map<Integer, NotificationConfigurationResponse> buildPreferencesMap(List<NotificationConfigurationResponse> notificationConfigurations) {
+        Map<Integer, NotificationConfigurationResponse> preferencesMap = new TreeMap<>();
+        for (int index = 0; index < notificationConfigurations.size(); index++) {
+            final int position = index + 1;
+            preferencesMap.put(position, notificationConfigurations.get(index));
+        }
+        return preferencesMap;
+    }
+
     private void viewKeywords() {
-        List<KeywordResponse> allKeywordsOfUser = this.notificationConfigurationService.getAllKeywordsOfUser();;
-        allKeywordsOfUser.forEach(consoleLogger::info);
+        displayKeywords();
+        consoleLogger.info(Messages.TOGGLE_KEYWORD_ACTIVE_STATUS);
+        char choice = inputReader.next().toLowerCase().charAt(0);
+        if (Character.toLowerCase(choice) == 'y') {
+            toggleKeywordActiveStatus();
+        }
     }
 
     private void toggleKeywordActiveStatus() {
-        consoleLogger.info("Enter the keyword id: ");
+        displayKeywords();
+        consoleLogger.info(Messages.ENTER_KEYWORD_ID);
         Long keywordId = inputReader.nextLong();
         this.notificationConfigurationService.toggleKeywordActiveStatus(keywordId);
     }
 
+    private void displayKeywords() {
+        List<KeywordResponse> allKeywordsOfUser = this.notificationConfigurationService.getAllKeywordsOfUser();
+        KeywordDisplayer.displayKeywords(allKeywordsOfUser);
+    }
+
     private void addKeyword() {
-        consoleLogger.info("Enter the category under which you want to create the keyword");
+        consoleLogger.info(Messages.ENTER_CATEGORY_NAME);
         String newsCategory = inputReader.next();
 
-        consoleLogger.info("Enter the keyword");
+        consoleLogger.info(Messages.ENTER_KEYWORD);
         String keyword = inputReader.next();
 
         CreateKeywordRequest createKeywordRequest = new CreateKeywordRequest();

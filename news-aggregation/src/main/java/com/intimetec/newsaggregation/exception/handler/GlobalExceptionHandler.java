@@ -1,5 +1,6 @@
 package com.intimetec.newsaggregation.exception.handler;
 
+import com.intimetec.newsaggregation.constant.Constants;
 import com.intimetec.newsaggregation.dto.response.ApiErrorResponse;
 import com.intimetec.newsaggregation.exception.BadRequestException;
 import com.intimetec.newsaggregation.exception.NotFoundException;
@@ -43,9 +44,8 @@ public class GlobalExceptionHandler {
             @NotNull HttpStatus status,
             @NotNull String message
     ) {
-        return ApiErrorResponse
-                .builder()
-                .success(false)
+        return ApiErrorResponse.builder()
+                .success(Constants.SUCCESS_FALSE)
                 .message(message)
                 .httpStatus(status)
                 .error(message)

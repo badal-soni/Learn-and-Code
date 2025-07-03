@@ -1,6 +1,7 @@
 package com.intimetec.newsaggregation.service.impl;
 
 import com.intimetec.newsaggregation.constant.Constants;
+import com.intimetec.newsaggregation.constant.Messages;
 import com.intimetec.newsaggregation.dto.event.UserRegisteredEvent;
 import com.intimetec.newsaggregation.dto.request.SignInRequest;
 import com.intimetec.newsaggregation.dto.request.SignUpRequest;
@@ -39,12 +40,12 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public SignUpResponse signUpUser(SignUpRequest signUpRequest) {
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-            throw new NotFoundException("Email already exists");
+            throw new NotFoundException(Messages.EMAIL_ALREADY_EXISTS);
         }
 
         Optional<UserRole> userRole = userRolesRepository.findByRoleName(Constants.ROLE_USER);
         if (userRole.isEmpty()) {
-            throw new NotFoundException("Role USER not found");
+            throw new NotFoundException(String.format(Messages.ROLE_NOT_FOUND, Constants.ROLE_USER));
         }
         User user = User.builder()
                 .email(signUpRequest.getEmail())
@@ -71,10 +72,10 @@ public class AuthServiceImpl implements AuthService {
     public SignInResponse signInUser(SignInRequest signInRequest) {
         User user = userRepository
                 .findByEmail(signInRequest.getEmail())
-                .orElseThrow(() -> new NotFoundException("User not found with email: " + signInRequest.getEmail()));
+                .orElseThrow(() -> new NotFoundException(String.format(Messages.USER_NOT_FOUND, signInRequest.getEmail())));
 
         if (!bCryptPasswordEncoder.matches(signInRequest.getPassword(), user.getPassword())) {
-            throw new NotFoundException("Invalid credentials");
+            throw new NotFoundException(Messages.INVALID_CREDENTIALS);
         }
 
         final String accessToken = jwtUtility.generateToken(signInRequest.getEmail());

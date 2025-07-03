@@ -8,6 +8,6 @@ import java.util.List;
 public class AllNotificationConfigurations {
 
     private long userId;
-    private List<NewsConfigurationResponse> newsCategories;
+    private List<NotificationConfigurationResponse> newsCategories;
 
 }

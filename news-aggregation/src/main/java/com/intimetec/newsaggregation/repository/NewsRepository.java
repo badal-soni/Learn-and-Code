@@ -14,27 +14,29 @@ import java.util.List;
 @Repository
 public interface NewsRepository extends JpaRepository<News, Long> {
 
+    @Query(value = "SELECT n FROM News n JOIN FETCH n.categories c WHERE n.publishedAt = :date AND c.isHidden = FALSE")
     List<News> findAllByPublishedAtAndIsHiddenFalse(LocalDate date);
 
+    @Query(value = "SELECT n FROM News n JOIN FETCH n.categories c WHERE n.publishedAt >= :from AND n.publishedAt <= :to AND c.isHidden = FALSE")
     List<News> findAllByPublishedAtBetweenAndIsHiddenFalse(LocalDate from, LocalDate to);
 
-    @Query(value = "SELECT n FROM News n JOIN FETCH n.categories c WHERE c.categoryName = :categoryName")
+    @Query(value = "SELECT n FROM News n JOIN FETCH n.categories c WHERE c.categoryName = :categoryName AND c.isHidden = FALSE AND n.isHidden = FALSE")
     List<News> findAllByCategory(String categoryName);
 
-    @Query(value = "SELECT n FROM News n JOIN FETCH n.categories c WHERE c.categoryName = :categoryName AND n.publishedAt >= :from")
+    @Query(value = "SELECT n FROM News n JOIN FETCH n.categories c WHERE c.categoryName = :categoryName AND n.publishedAt >= :from AND c.isHidden = FALSE AND n.isHidden = FALSE")
     List<News> findAllByCategoryFromPublishedAt(String categoryName, LocalDate from);
 
-    @Query(value = "SELECT n FROM News n JOIN FETCH n.categories c WHERE c.categoryName = :categoryName AND n.publishedAt <= :to")
+    @Query(value = "SELECT n FROM News n JOIN FETCH n.categories c WHERE c.categoryName = :categoryName AND n.publishedAt <= :to AND c.isHidden = FALSE AND n.isHidden = FALSE")
     List<News> findAllByCategoryTillPublishedAt(String categoryName, LocalDate to);
 
-    @Query(value = "SELECT n FROM News n JOIN FETCH n.categories c WHERE c.categoryName = :categoryName AND n.publishedAt >= :from AND n.publishedAt <= :to")
+    @Query(value = "SELECT n FROM News n JOIN FETCH n.categories c WHERE c.categoryName = :categoryName AND n.publishedAt >= :from AND n.publishedAt <= :to AND c.isHidden = FALSE AND n.isHidden = FALSE")
     List<News> findAllByCategoriesCategoryNameAndPublishedAtBetweenAndIsHiddenFalse(String categoryName, LocalDate from, LocalDate to);
 
     List<News> findAllByIsHiddenTrue();
 
     List<News> findAllByIsHiddenFalse();
 
-    @Query(value = "SELECT news.id FROM News news")
+    @Query(value = "SELECT n.id FROM News n JOIN n.categories c WHERE n.isHidden = FALSE AND c.isHidden = FALSE")
     List<Long> findAllIds();
 
     @Query(
@@ -71,15 +73,23 @@ public interface NewsRepository extends JpaRepository<News, Long> {
     @Transactional
     @Query(
             value = "UPDATE news " +
-                    "SET is_hidden = :isHidden " +
+                    "SET is_hidden = TRUE " +
                     "WHERE is_hidden = false AND (" +
                     "LOWER(headline) REGEXP :pattern OR LOWER(description) REGEXP :pattern)",
             nativeQuery = true
     )
-    int updateHiddenStatusByKeywords(
-            @Param("isHidden") boolean isHidden,
-            @Param("pattern") String pattern
-    );
+    int setIsHiddenTrue(@Param("pattern") String pattern);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Transactional
+    @Query(
+            value = "UPDATE news " +
+                    "SET is_hidden = FALSE " +
+                    "WHERE is_hidden = TRUE AND (" +
+                    "LOWER(headline) REGEXP :pattern OR LOWER(description) REGEXP :pattern)",
+            nativeQuery = true
+    )
+    int setIsHiddenFalse(@Param("pattern") String pattern);
 
     @Transactional
     @Modifying(clearAutomatically = true, flushAutomatically = true)

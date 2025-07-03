@@ -10,6 +10,7 @@ import com.intimetec.newsaggregation.dto.response.ApiSuccessResponse;
 import com.intimetec.newsaggregation.entity.User;
 import com.intimetec.newsaggregation.service.KeywordService;
 import com.intimetec.newsaggregation.service.NewsCategoryService;
+import com.intimetec.newsaggregation.util.HttpUtil;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -33,21 +34,16 @@ public class NewsCategoryController {
     @Secured(Constants.SPRING_ROLE_ADMIN)
     public ResponseEntity<ApiSuccessResponse> createCategory(@RequestBody CreateCategoryRequest createCategoryRequest) {
         newsCategoryService.createCategory(createCategoryRequest);
-        return ApiSuccessResponse.builder()
-                .success(Constants.SUCCESS_TRUE)
-                .message(HttpStatus.CREATED.getReasonPhrase())
-                .httpStatus(HttpStatus.CREATED)
-                .build();
+        return HttpUtil.sendResponseWithNoData(HttpStatus.CREATED);
     }
 
     @GetMapping
+    @Secured(value = Constants.SPRING_ROLE_ADMIN)
     public ResponseEntity<ApiSuccessResponse> viewAllCategories() {
-        return ApiSuccessResponse.builder()
-                .success(Constants.SUCCESS_TRUE)
-                .message(HttpStatus.OK.getReasonPhrase())
-                .httpStatus(HttpStatus.OK)
-                .data(newsCategoryService.getAllCategories())
-                .build();
+        return HttpUtil.sendResponseWithData(
+                newsCategoryService.getAllCategories(),
+                HttpStatus.OK
+        );
     }
 
     @PostMapping(
@@ -61,48 +57,44 @@ public class NewsCategoryController {
     ) {
         createKeywordRequest.setParentCategory(categoryName);
         keywordService.createKeyword(createKeywordRequest, user);
-        return ApiSuccessResponse.builder()
-                .success(Constants.SUCCESS_TRUE)
-                .message(HttpStatus.CREATED.getReasonPhrase())
-                .httpStatus(HttpStatus.CREATED)
-                .build();
+        return HttpUtil.sendResponseWithNoData(HttpStatus.CREATED);
     }
 
     @PutMapping(
             path = "/hide",
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
+    @Secured(value = Constants.SPRING_ROLE_ADMIN)
     public ResponseEntity<ApiSuccessResponse> hideNewsCategory(@RequestBody NewsCategories newsCategories) {
         newsCategoryService.hideNewsCategories(newsCategories.getNewsCategories());
-        return ApiSuccessResponse.builder()
-                .success(Constants.SUCCESS_TRUE)
-                .message(HttpStatus.OK.getReasonPhrase())
-                .httpStatus(HttpStatus.OK)
-                .build();
+        return HttpUtil.sendResponseWithNoData(HttpStatus.OK);
     }
 
     @PutMapping(
             path = "/unhide",
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
+    @Secured(value = Constants.SPRING_ROLE_ADMIN)
     public ResponseEntity<ApiSuccessResponse> unHideNewsCategory(@RequestBody NewsCategories newsCategories) {
-        // todo: create utility methods in HttpUtil class which can be used directly, so no need to call ApiSuccessResponse.builder() each time manually
         newsCategoryService.unHideNewsCategories(newsCategories.getNewsCategories());
-        return ApiSuccessResponse.builder()
-                .success(Constants.SUCCESS_TRUE)
-                .message(HttpStatus.OK.getReasonPhrase())
-                .httpStatus(HttpStatus.OK)
-                .build();
+        return HttpUtil.sendResponseWithNoData(HttpStatus.OK);
     }
 
     @GetMapping(path = "/hidden")
+    @Secured(value = Constants.SPRING_ROLE_ADMIN)
     public ResponseEntity<ApiSuccessResponse> viewHiddenNewsCategories() {
-        return ApiSuccessResponse.builder()
-                .success(Constants.SUCCESS_TRUE)
-                .data(newsCategoryService.getAllHiddenCategories())
-                .message(HttpStatus.OK.getReasonPhrase())
-                .httpStatus(HttpStatus.OK)
-                .build();
+        return HttpUtil.sendResponseWithData(
+                newsCategoryService.getAllHiddenCategories(),
+                HttpStatus.OK
+        );
+    }
+
+    @GetMapping(path = "/unhidden")
+    public ResponseEntity<ApiSuccessResponse> viewUnHiddenNewsCategories() {
+        return HttpUtil.sendResponseWithData(
+                newsCategoryService.getAllUnHiddenCategories(),
+                HttpStatus.OK
+        );
     }
 
 }
