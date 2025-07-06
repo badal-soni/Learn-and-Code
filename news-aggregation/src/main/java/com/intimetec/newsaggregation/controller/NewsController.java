@@ -32,7 +32,7 @@ public class NewsController {
     private final ReportNewsService reportNewsService;
 
     @GetMapping(path = "/headlines")
-    public ResponseEntity<ApiSuccessResponse> viewHeadlines(
+    public ResponseEntity<ApiSuccessResponse> getHeadlines(
             @CurrentUser User currentUser,
             @ModelAttribute ViewHeadlinesRequest viewHeadlinesRequest
     ) {
@@ -43,7 +43,7 @@ public class NewsController {
     }
 
     @GetMapping(path = "/headlines/today")
-    public ResponseEntity<ApiSuccessResponse> viewTodayHeadlines(@CurrentUser User currentUser) {
+    public ResponseEntity<ApiSuccessResponse> getTodayHeadlines(@CurrentUser User currentUser) {
         return HttpUtil.sendResponseWithData(
                 newsService.getTodayHeadline(currentUser),
                 HttpStatus.OK
@@ -51,7 +51,7 @@ public class NewsController {
     }
 
     @GetMapping(path = "/{categoryName}/headlines")
-    public ResponseEntity<ApiSuccessResponse> viewHeadlinesUnderCategory(
+    public ResponseEntity<ApiSuccessResponse> getHeadlinesUnderCategory(
             @CurrentUser User currentUser,
             @PathVariable String categoryName,
             @ModelAttribute ViewHeadlinesRequest viewHeadlinesRequest
@@ -115,7 +115,7 @@ public class NewsController {
 
     @GetMapping(path = "/reported")
     @Secured(value = Constants.SPRING_ROLE_ADMIN)
-    public ResponseEntity<ApiSuccessResponse> viewAllReportedNews() {
+    public ResponseEntity<ApiSuccessResponse> getAllReportedNews() {
         return HttpUtil.sendResponseWithData(
                 reportNewsService.getAllReportedNews(),
                 HttpStatus.OK
@@ -154,7 +154,7 @@ public class NewsController {
 
     @GetMapping(path = "/hidden")
     @Secured(value = Constants.SPRING_ROLE_ADMIN)
-    public ResponseEntity<ApiSuccessResponse> viewAllHiddenNews() {
+    public ResponseEntity<ApiSuccessResponse> getAllHiddenNews() {
         return HttpUtil.sendResponseWithData(
                 newsService.getHiddenNews(),
                 HttpStatus.OK
@@ -166,7 +166,7 @@ public class NewsController {
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
     @Secured(value = Constants.SPRING_ROLE_ADMIN)
-    public ResponseEntity<ApiSuccessResponse> viewNewsWithKeywords(@RequestBody Keywords keywords) {
+    public ResponseEntity<ApiSuccessResponse> getNewsWithKeywordIds(@RequestBody Keywords keywords) {
         return HttpUtil.sendResponseWithData(
                 newsService.getNewsWithKeywords(keywords),
                 HttpStatus.OK
@@ -174,7 +174,7 @@ public class NewsController {
     }
 
     @GetMapping(path = "/{newsId}")
-    public ResponseEntity<ApiSuccessResponse> viewNewsById(
+    public ResponseEntity<ApiSuccessResponse> getNewsById(
             @PathVariable Long newsId,
             @CurrentUser User user
     ) {

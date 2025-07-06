@@ -33,7 +33,7 @@ public class NotificationConfigurationController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiSuccessResponse> viewNotificationPreferences(@CurrentUser User currentUser) {
+    public ResponseEntity<ApiSuccessResponse> getNotificationConfigurations(@CurrentUser User currentUser) {
         return HttpUtil.sendResponseWithData(
                 notificationConfigurationService.getAllNotificationConfigurations(currentUser),
                 HttpStatus.OK

@@ -39,7 +39,7 @@ public class NewsCategoryController {
 
     @GetMapping
     @Secured(value = Constants.SPRING_ROLE_ADMIN)
-    public ResponseEntity<ApiSuccessResponse> viewAllCategories() {
+    public ResponseEntity<ApiSuccessResponse> getAllCategories() {
         return HttpUtil.sendResponseWithData(
                 newsCategoryService.getAllCategories(),
                 HttpStatus.OK
@@ -82,7 +82,7 @@ public class NewsCategoryController {
 
     @GetMapping(path = "/hidden")
     @Secured(value = Constants.SPRING_ROLE_ADMIN)
-    public ResponseEntity<ApiSuccessResponse> viewHiddenNewsCategories() {
+    public ResponseEntity<ApiSuccessResponse> getHiddenNewsCategories() {
         return HttpUtil.sendResponseWithData(
                 newsCategoryService.getAllHiddenCategories(),
                 HttpStatus.OK
@@ -90,7 +90,7 @@ public class NewsCategoryController {
     }
 
     @GetMapping(path = "/unhidden")
-    public ResponseEntity<ApiSuccessResponse> viewUnHiddenNewsCategories() {
+    public ResponseEntity<ApiSuccessResponse> getUnHiddenNewsCategories() {
         return HttpUtil.sendResponseWithData(
                 newsCategoryService.getAllUnHiddenCategories(),
                 HttpStatus.OK

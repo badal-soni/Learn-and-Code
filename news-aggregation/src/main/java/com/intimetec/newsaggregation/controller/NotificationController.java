@@ -26,7 +26,7 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @GetMapping
-    public ResponseEntity<ApiSuccessResponse> viewNotifications(@CurrentUser User user) {
+    public ResponseEntity<ApiSuccessResponse> getAllUnreadNotificationsOfUser(@CurrentUser User user) {
         return HttpUtil.sendResponseWithData(
                 notificationService.getAllUnreadNotificationsOfUser(user),
                 HttpStatus.OK
@@ -34,7 +34,7 @@ public class NotificationController {
     }
 
     @GetMapping(path = "/{notificationId}")
-    public ResponseEntity<ApiSuccessResponse> viewNotificationById(
+    public ResponseEntity<ApiSuccessResponse> getNotificationById(
             @PathVariable("notificationId") Long notificationId,
             @CurrentUser User user
     ) {

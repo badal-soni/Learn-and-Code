@@ -25,7 +25,7 @@ public class DashboardController {
     private final DashboardService dashboardService;
 
     @GetMapping(path = "/news/saved")
-    public ResponseEntity<ApiSuccessResponse> viewSavedNews(@CurrentUser User currentUser) {
+    public ResponseEntity<ApiSuccessResponse> getSavedNewsOfUser(@CurrentUser User currentUser) {
         return HttpUtil.sendResponseWithData(
                 dashboardService.getAllNewsSavedByUser(currentUser),
                 HttpStatus.OK
