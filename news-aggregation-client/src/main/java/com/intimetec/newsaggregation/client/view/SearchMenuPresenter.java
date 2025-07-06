@@ -3,10 +3,10 @@ package com.intimetec.newsaggregation.client.view;
 import com.intimetec.newsaggregation.client.constant.MenuChoices;
 import com.intimetec.newsaggregation.client.constant.Messages;
 import com.intimetec.newsaggregation.client.context.UserContextHolder;
-import com.intimetec.newsaggregation.client.service.NewsService;
+import com.intimetec.newsaggregation.client.displayer.NewsDisplayer;
 import com.intimetec.newsaggregation.client.logger.ConsoleLogger;
+import com.intimetec.newsaggregation.client.service.NewsService;
 import com.intimetec.newsaggregation.dto.request.SearchNewsRequest;
-import com.intimetec.newsaggregation.dto.response.NewsResponse;
 
 import java.time.LocalDate;
 import java.util.Scanner;
@@ -14,13 +14,13 @@ import java.util.Scanner;
 public class SearchMenuPresenter implements MenuPresenter {
 
     private final NewsService newsService;
-    private final HeadlineMenu headlineMenu;
+    private final HeadlineMenuPresenter headlineMenuPresenter;
     private final ConsoleLogger consoleLogger;
     private final Scanner inputReader;
 
     public SearchMenuPresenter() {
         this.newsService = new NewsService();
-        this.headlineMenu = new HeadlineMenu();
+        this.headlineMenuPresenter = new HeadlineMenuPresenter();
         this.consoleLogger = new ConsoleLogger();
         this.inputReader = new Scanner(System.in);
     }
@@ -42,7 +42,7 @@ public class SearchMenuPresenter implements MenuPresenter {
         int choice = inputReader.nextInt();
         if (choice == 1) {
             this.searchNews();
-            this.headlineMenu.saveNews();
+            this.headlineMenuPresenter.saveNews();
         } else if (choice == 2) {
             UserContextHolder.clearContext();
             return false;
@@ -81,9 +81,7 @@ public class SearchMenuPresenter implements MenuPresenter {
         }
 
         var newsResponses = this.newsService.searchNews(searchNewsRequest);
-        for (NewsResponse newsResponse: newsResponses) {
-            consoleLogger.info(newsResponse);
-        }
+        NewsDisplayer.displayNews(newsResponses);
     }
 
 }

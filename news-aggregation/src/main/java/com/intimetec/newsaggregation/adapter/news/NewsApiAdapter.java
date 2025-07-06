@@ -71,7 +71,7 @@ public class NewsApiAdapter extends BaseNewsAdapter implements NewsFetcher {
         for (int i = 0; i < newsArticleJsonResponse.length(); i++) {
             final JSONObject news = newsArticleJsonResponse.getJSONObject(i);
             final String assignedCategory = assignCategory(news);
-            final NewsCategory newsCategory = getFromCache(assignedCategory);
+            final NewsCategory newsCategory = getFromCacheOrElsePut(assignedCategory);
 
             News newsEntity = News.builder()
                     .headline(news.optString(NewsApiResponseAttributes.TITLE, NewsApiResponseAttributes.NOT_ANY))
@@ -101,12 +101,11 @@ public class NewsApiAdapter extends BaseNewsAdapter implements NewsFetcher {
         return this.newsCategoryClassifier.classifyNewsCategory(headline, description);
     }
 
-    private NewsCategory getFromCache(String assignedCategory) {
-        final NewsCategory newsCategory;
+    private NewsCategory getFromCacheOrElsePut(String assignedCategory) {
         if (categoryCache.containsKey(assignedCategory)) {
             return categoryCache.get(assignedCategory);
         }
-        newsCategory = createCategoryIfNotExists(assignedCategory);
+        final NewsCategory newsCategory = createCategoryIfNotExists(assignedCategory);
         categoryCache.put(assignedCategory, newsCategory);
         return newsCategory;
     }

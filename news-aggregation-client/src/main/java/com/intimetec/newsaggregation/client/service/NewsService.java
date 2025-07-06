@@ -134,15 +134,15 @@ public class NewsService {
         }
     }
 
-    public List<com.intimetec.newsaggregation.dto.response.NewsResponse> searchNews(SearchNewsRequest searchNewsRequest) {
+    public List<com.intimetec.newsaggregation.client.dto.response.NewsResponse> searchNews(SearchNewsRequest searchNewsRequest) {
         try {
             Map<String, String> headers = CommonUtility.getDefaultHeaders();
             headers.put(HttpHeader.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-            ApiResponse<List<com.intimetec.newsaggregation.dto.response.NewsResponse>> response = httpClient.postList(
+            ApiResponse<List<com.intimetec.newsaggregation.client.dto.response.NewsResponse>> response = httpClient.postList(
                     ApiUrls.SEARCH_NEWS,
                     searchNewsRequest,
                     headers,
-                    com.intimetec.newsaggregation.dto.response.NewsResponse.class
+                    com.intimetec.newsaggregation.client.dto.response.NewsResponse.class
             );
             return CommonUtility.getDataOrElseThrow(
                     response,

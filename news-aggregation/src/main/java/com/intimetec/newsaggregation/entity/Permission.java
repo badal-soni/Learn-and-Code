@@ -13,7 +13,7 @@ import java.util.List;
 public class Permission extends BaseEntity {
 
     @Column(name = "permission_name", nullable = false)
-    private String permissionName; // FullAccess, ReadAndWrite, Read, Write
+    private String permissionName;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

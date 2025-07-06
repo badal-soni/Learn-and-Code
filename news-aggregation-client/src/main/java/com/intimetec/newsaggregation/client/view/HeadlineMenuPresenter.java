@@ -15,14 +15,14 @@ import com.intimetec.newsaggregation.dto.response.NewsCategoryResponse;
 import java.time.LocalDate;
 import java.util.*;
 
-public class HeadlineMenu implements MenuPresenter {
+public class HeadlineMenuPresenter implements MenuPresenter {
 
     private final NewsService newsService;
     private final NewsCategoryService newsCategoryService;
     private final ConsoleLogger consoleLogger;
     private final Scanner inputReader;
 
-    public HeadlineMenu() {
+    public HeadlineMenuPresenter() {
         this.newsService = new NewsService();
         this.newsCategoryService = new NewsCategoryService();
         this.consoleLogger = new ConsoleLogger();
@@ -128,7 +128,7 @@ public class HeadlineMenu implements MenuPresenter {
             return;
         }
         while (Character.toLowerCase(choice) == 'y') {
-            consoleLogger.info(Messages.ENTER_NEWS_CATEGORIES);
+            consoleLogger.info(Messages.ENTER_NEWS_ID);
             long newsId = inputReader.nextLong();
             this.newsService.toggleNewsLike(newsId);
 

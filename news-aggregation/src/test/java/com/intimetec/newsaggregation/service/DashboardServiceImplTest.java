@@ -37,7 +37,6 @@ class DashboardServiceImplTest {
 
     @Test
     void testGetAllNewsSavedByUser_success() {
-        // Arrange
         User user = User.builder()
                 .email("john@example.com")
                 .username("John")

@@ -61,6 +61,7 @@ public class AuthService {
             }
             UserContextHolder.isLoggedIn = true;
             UserContextHolder.userRole = response.getData().getRoles().stream().findFirst().get();
+            UserContextHolder.accessToken = response.getData().getJwtToken();
             return response.getData();
         } catch (Exception exception) {
             fileLogger.error(AuthService.class + ": " + exception.getMessage());

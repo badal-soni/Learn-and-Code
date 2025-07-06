@@ -8,7 +8,7 @@ public class CommonSearchCriteria {
 
     @NotBlank
     private String searchQuery;
-    private String sortBy; // likes or dislikes
+    private String sortBy;
     private boolean isAscendingOrder;
     private int pageIndex;
     private int pageSize;

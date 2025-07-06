@@ -6,7 +6,6 @@ import com.intimetec.newsaggregation.client.constant.MediaType;
 import com.intimetec.newsaggregation.client.dto.request.CreateExternalServerRequest;
 import com.intimetec.newsaggregation.client.dto.request.UpdateExternalServerRequest;
 import com.intimetec.newsaggregation.client.dto.response.ApiResponse;
-import com.intimetec.newsaggregation.client.logger.ConsoleLogger;
 import com.intimetec.newsaggregation.client.logger.FileLogger;
 import com.intimetec.newsaggregation.client.util.CommonUtility;
 import com.intimetec.newsaggregation.client.util.HttpClient;
@@ -18,12 +17,10 @@ import java.util.Map;
 public class ExternalServerDetailService {
 
     private final HttpClient httpClient;
-    private final ConsoleLogger consoleLogger;
     private final FileLogger fileLogger;
 
     public ExternalServerDetailService() {
         this.httpClient = new HttpClient();
-        this.consoleLogger = new ConsoleLogger();
         this.fileLogger = FileLogger.getInstance();
     }
 

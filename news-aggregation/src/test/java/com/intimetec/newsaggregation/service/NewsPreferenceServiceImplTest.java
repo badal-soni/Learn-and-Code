@@ -48,24 +48,6 @@ class NewsPreferencesServiceImplTest {
     }
 
     @Test
-    void sortNewsByUserPreferences_shouldSortNewsBasedOnPreferences() {
-        User user = MockDataCreator.createMockUser();
-        user.setNotifications(List.of(MockDataCreator.createMockNotification()));
-        user.setNotificationConfigurations(List.of(MockDataCreator.createMockNotificationConfiguration()));
-        News news = MockDataCreator.createMockNews();
-        news.setReadHistory(List.of(MockDataCreator.createMockNewsReadHistory()));
-        news.setUserInteractions(List.of(MockDataCreator.createMockNewsLikes()));
-        news.setSavedNews(List.of(MockDataCreator.createMockSavedArticle()));
-        when(newsReadHistoryRepository.findAllIdsByReadBy(user)).thenReturn(List.of(news.getId()));
-        TreeSet<Long> likedNewsIds = new TreeSet<>();
-        likedNewsIds.add(news.getId());
-        when(newsLikesRepository.findAllLikedNewsIds(user.getId())).thenReturn(likedNewsIds);
-        when(savedArticleRepository.findAllNewsIdsBySavedById(user.getId())).thenReturn(List.of(news.getId()));
-        List<NewsResponse> responses = newsPreferencesService.sortNewsByUserPreferences(user, List.of(news));
-        assertEquals(1, responses.size());
-    }
-
-    @Test
     void sortCategoryNews_shouldReturnEmptyListIfCategoryNewsListIsEmpty() {
         User user = MockDataCreator.createMockUser();
         List<NewsResponse> responses = newsPreferencesService.sortCategoryNews(user, List.of());

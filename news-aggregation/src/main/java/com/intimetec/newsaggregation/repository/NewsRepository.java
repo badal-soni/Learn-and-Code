@@ -47,22 +47,22 @@ public interface NewsRepository extends JpaRepository<News, Long> {
     )
     List<News> findAllHavingKeywords(@Param("pattern") String pattern);
 
-    @Query(value = "SELECT news FROM News news WHERE LOWER(news.headline) LIKE LOWER(CONCAT('%', :textToSearch, '%')) OR LOWER(news.description) LIKE LOWER(CONCAT('%', :textToSearch, '%')) AND news.isHidden = false")
+    @Query("SELECT news FROM News news WHERE (LOWER(news.headline) LIKE LOWER(CONCAT('%', :textToSearch, '%')) OR LOWER(news.description) LIKE LOWER(CONCAT('%', :textToSearch, '%'))) AND news.isHidden = false")
     List<News> findAllNewsMatchesHeadlineOrDescriptionAndHiddenFalse(@Param("textToSearch") String textToSearch);
 
-    @Query(value = "SELECT news FROM News news WHERE LOWER(news.headline) LIKE LOWER(CONCAT('%', :textToSearch, '%')) OR LOWER(news.description) LIKE LOWER(CONCAT('%', :textToSearch, '%')) AND news.publishedAt >= :publishedDate AND news.isHidden = false")
+    @Query(value = "SELECT news FROM News news WHERE (LOWER(news.headline) LIKE LOWER(CONCAT('%', :textToSearch, '%')) OR LOWER(news.description) LIKE LOWER(CONCAT('%', :textToSearch, '%'))) AND news.publishedAt >= :publishedDate AND news.isHidden = false")
     List<News> findAllNewsMatchesHeadlineOrDescriptionFromPublishedDate(
             @Param("textToSearch") String textToSearch,
             @Param("publishedDate") LocalDate publishedDate
     );
 
-    @Query(value = "SELECT news FROM News news WHERE LOWER(news.headline) LIKE LOWER(CONCAT('%', :textToSearch, '%')) OR LOWER(news.description) LIKE LOWER(CONCAT('%', :textToSearch, '%')) AND news.publishedAt <= :publishedDate AND news.isHidden = false")
+    @Query(value = "SELECT news FROM News news WHERE (LOWER(news.headline) LIKE LOWER(CONCAT('%', :textToSearch, '%')) OR LOWER(news.description) LIKE LOWER(CONCAT('%', :textToSearch, '%'))) AND news.publishedAt <= :publishedDate AND news.isHidden = false")
     List<News> findAllNewsMatchesHeadlineOrDescriptionTillPublishedDate(
             @Param("textToSearch") String textToSearch,
             @Param("publishedDate") LocalDate publishedDate
     );
 
-    @Query(value = "SELECT news FROM News news WHERE LOWER(news.headline) LIKE LOWER(CONCAT('%', :textToSearch, '%')) OR LOWER(news.description) LIKE LOWER(CONCAT('%', :textToSearch, '%')) AND news.publishedAt >= :from AND news.publishedAt <= :to AND news.isHidden = false")
+    @Query(value = "SELECT news FROM News news WHERE (LOWER(news.headline) LIKE LOWER(CONCAT('%', :textToSearch, '%')) OR LOWER(news.description) LIKE LOWER(CONCAT('%', :textToSearch, '%'))) AND news.publishedAt >= :from AND news.publishedAt <= :to AND news.isHidden = false")
     List<News> findAllNewsMatchesHeadlineOrDescriptionAndPublishedAtInBetween(
             @Param("textToSearch") String textToSearch,
             @Param("from") LocalDate from,

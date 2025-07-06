@@ -12,7 +12,7 @@ public class MenuFactory {
         } else if (menuType.equals(Constants.ROLE_USER)) {
             return new UserMenuPresenter();
         } else if (menuType.equals(UserDashboardKeys.HEADLINES)) {
-            return new HeadlineMenu();
+            return new HeadlineMenuPresenter();
         } else if (menuType.equals(UserDashboardKeys.SAVED_ARTICLES)) {
             return new SavedArticleMenu();
         } else if (menuType.equals(UserDashboardKeys.SEARCH)) {

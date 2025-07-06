@@ -24,7 +24,10 @@ public class SecurityConfig {
 
     private static final String[] WHITE_LISTED_URLS = {
             "/api/v1/auth/**",
-            "/api/v1/news/"
+            "/api/v1/news/",
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html"
     };
 
     @Bean
