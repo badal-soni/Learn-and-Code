@@ -10,5 +10,7 @@ public class EmailConstants {
     public static final String NEWS_EMAIL_CONTENT_URL = "   URL: ";
     public static final String WELCOME_EMAIL_SUBJECT = "You have successfully registered in our application";
     public static final String WELCOME_EMAIL_CONTENT = "Welcome %s, you have been successfully registered in our app.\n Stay tuned for latest news update";
+    public static final String NEWS_REPORTED_SUBJECT = "A news has been reported";
+    public static final String NEWS_REPORTED_CONTENT = "User %s has reported the news with id: %s. News URL: %s with reason: %s";
 
 }

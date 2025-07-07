@@ -10,8 +10,7 @@ import com.intimetec.newsaggregation.client.service.AuthService;
 import com.intimetec.newsaggregation.client.util.HttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.lang.reflect.Field;
+import util.TestUtil;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -25,14 +24,7 @@ class AuthServiceTest {
     void setUp() throws Exception {
         authService = new AuthService();
         mockHttpClient = mock(HttpClient.class);
-
-        setPrivateField(authService, "httpClient", mockHttpClient);
-    }
-
-    private void setPrivateField(Object target, String fieldName, Object value) throws Exception {
-        Field field = target.getClass().getDeclaredField(fieldName);
-        field.setAccessible(true);
-        field.set(target, value);
+        TestUtil.setPrivateField(authService, "httpClient", mockHttpClient);
     }
 
     @Test

@@ -9,8 +9,8 @@ import com.intimetec.newsaggregation.dto.NewsCategories;
 import com.intimetec.newsaggregation.dto.response.NewsCategoryResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import util.TestUtil;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,14 +26,7 @@ class NewsCategoryServiceTest {
     void setUp() throws Exception {
         newsCategoryService = new NewsCategoryService();
         mockHttpClient = mock(HttpClient.class);
-
-        setPrivateField(newsCategoryService, "httpClient", mockHttpClient);
-    }
-
-    private void setPrivateField(Object target, String fieldName, Object value) throws Exception {
-        Field field = target.getClass().getDeclaredField(fieldName);
-        field.setAccessible(true);
-        field.set(target, value);
+        TestUtil.setPrivateField(newsCategoryService, "httpClient", mockHttpClient);
     }
 
     @Test

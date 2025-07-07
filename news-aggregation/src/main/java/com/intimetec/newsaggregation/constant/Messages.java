@@ -5,6 +5,7 @@ public class Messages {
     public static final String EMAIL_ALREADY_EXISTS = "Email already exists";
     public static final String ROLE_NOT_FOUND = "Role %s not found";
     public static final String USER_NOT_FOUND = "User %s not found";
+    public static final String ADMIN_USER_NOT_FOUND = "Admin user not found";
     public static final String INVALID_CREDENTIALS = "Invalid credentials";
 
     public static final String EXTERNAL_SERVER_NOT_FOUND = "The external server: {} could not be found";

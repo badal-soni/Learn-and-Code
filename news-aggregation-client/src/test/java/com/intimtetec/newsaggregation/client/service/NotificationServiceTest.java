@@ -7,8 +7,8 @@ import com.intimetec.newsaggregation.client.util.HttpClient;
 import com.intimetec.newsaggregation.dto.response.NotificationResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import util.TestUtil;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,14 +23,7 @@ class NotificationServiceTest {
     void setUp() throws Exception {
         notificationService = new NotificationService();
         mockHttpClient = mock(HttpClient.class);
-
-        setPrivateField(notificationService, "httpClient", mockHttpClient);
-    }
-
-    private void setPrivateField(Object target, String fieldName, Object value) throws Exception {
-        Field field = target.getClass().getDeclaredField(fieldName);
-        field.setAccessible(true);
-        field.set(target, value);
+        TestUtil.setPrivateField(notificationService, "httpClient", mockHttpClient);
     }
 
     @Test

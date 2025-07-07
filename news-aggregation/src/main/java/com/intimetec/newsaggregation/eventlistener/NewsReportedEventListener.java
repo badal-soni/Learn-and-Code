@@ -1,9 +1,11 @@
 package com.intimetec.newsaggregation.eventlistener;
 
+import com.intimetec.newsaggregation.constant.EmailConstants;
+import com.intimetec.newsaggregation.constant.Messages;
 import com.intimetec.newsaggregation.dto.EmailNotificationPayload;
 import com.intimetec.newsaggregation.dto.event.NewsReportedEvent;
 import com.intimetec.newsaggregation.entity.User;
-import com.intimetec.newsaggregation.exception.BadRequestException;
+import com.intimetec.newsaggregation.exception.NotFoundException;
 import com.intimetec.newsaggregation.notification.email.EmailNotificationService;
 import com.intimetec.newsaggregation.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,11 +21,21 @@ public class NewsReportedEventListener {
 
     @EventListener
     public void onNewsReportedEvent(NewsReportedEvent event) {
-        final User adminUser = getAdminUser();
+        sendEmailNotification(event);
+    }
 
+    private void sendEmailNotification(NewsReportedEvent event) {
+        final User adminUser = getAdminUser();
         final EmailNotificationPayload emailNotificationPayload = new EmailNotificationPayload();
-        emailNotificationPayload.setSubject("A news has been reported");
-        emailNotificationPayload.setBody("User " + event.getReportedByEmail() + " has reported the news with id: " + event.getNewsId() + ". News URL: " + event.getNewsUrl());
+        emailNotificationPayload.setSubject(EmailConstants.NEWS_REPORTED_SUBJECT);
+        final String emailContent = String.format(
+                EmailConstants.NEWS_REPORTED_CONTENT,
+                event.getReportedByEmail(),
+                event.getNewsId(),
+                event.getNewsUrl(),
+                event.getReportReason()
+        );
+        emailNotificationPayload.setBody(emailContent);
         emailNotificationPayload.setRecipientEmailAddress(adminUser.getEmail());
         emailNotificationService.sendEmailNotification(emailNotificationPayload);
     }
@@ -31,7 +43,7 @@ public class NewsReportedEventListener {
     private User getAdminUser() {
         return userRepository
                 .findAdminUser()
-                .orElseThrow(() -> new BadRequestException("No admin user found to send email notification"));
+                .orElseThrow(() -> new NotFoundException(Messages.ADMIN_USER_NOT_FOUND));
     }
 
 }
