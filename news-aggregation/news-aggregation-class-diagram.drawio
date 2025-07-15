@@ -1,0 +1,71 @@
+<mxfile>
+  <diagram name="Class Diagram">
+    <mxGraphModel dx="1000" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Controllers -->
+        <mxCell id="2" value="AuthController" style="shape=rectangle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="100" y="100" width="200" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="3" value="- authService: AuthService\n+ signUp(SignUpRequest): ResponseEntity\n+ signIn(SignInRequest): ResponseEntity" style="shape=rectangle;whiteSpace=wrap;html=1;" vertex="1" parent="2">
+          <mxGeometry x="0" y="0" width="200" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="4" value="ExternalServerConfigurationController" style="shape=rectangle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="100" y="300" width="200" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="5" value="- externalServerConfigurationService: ExternalServerConfigurationService\n+ registerExternalServer(RegisterExternalServerRequest): ResponseEntity\n+ getAllServerConfigurations(): ResponseEntity" style="shape=rectangle;whiteSpace=wrap;html=1;" vertex="1" parent="4">
+          <mxGeometry x="0" y="0" width="200" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Services -->
+        <mxCell id="6" value="AuthService" style="shape=rectangle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="400" y="100" width="200" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="7" value="+ signUpUser(SignUpRequest): SignUpResponse\n+ signInUser(SignInRequest): SignInResponse" style="shape=rectangle;whiteSpace=wrap;html=1;" vertex="1" parent="6">
+          <mxGeometry x="0" y="0" width="200" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="8" value="ExternalServerConfigurationService" style="shape=rectangle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="400" y="300" width="200" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="9" value="+ registerExternalServer(RegisterExternalServerRequest): void\n+ listExternalServers(): List<ExternalServerStatusResponse>" style="shape=rectangle;whiteSpace=wrap;html=1;" vertex="1" parent="8">
+          <mxGeometry x="0" y="0" width="200" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Repositories -->
+        <mxCell id="10" value="UserRepository" style="shape=rectangle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="100" width="200" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="11" value="+ findByEmail(String): Optional<User>\n+ existsByEmail(String): boolean" style="shape=rectangle;whiteSpace=wrap;html=1;" vertex="1" parent="10">
+          <mxGeometry x="0" y="0" width="200" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="12" value="NewsRepository" style="shape=rectangle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="300" width="200" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="13" value="+ findAllByPublishedAt(LocalDate): List<News>\n+ findAllByPublishedAtBetween(LocalDate, LocalDate): List<News>" style="shape=rectangle;whiteSpace=wrap;html=1;" vertex="1" parent="12">
+          <mxGeometry x="0" y="0" width="200" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Relationships -->
+        <mxCell id="14" edge="1" source="2" target="6" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="15" edge="1" source="4" target="8" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="16" edge="1" source="6" target="10" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="17" edge="1" source="8" target="12" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Repeat for other classes and relationships -->
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
